@@ -1,0 +1,4610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>For You — A Little Universe</title>
+    <link rel="manifest" href="./manifest.json" />
+    <meta name="theme-color" content="#5b3f8c" />
+    <link rel="icon" href="./icon.svg?v=2" type="image/svg+xml" />
+    <link rel="shortcut icon" href="./icon.svg?v=2" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./icon.svg?v=2" />
+    <style>
+        /* ============================================================
+           DESIGN TOKENS
+           ============================================================ */
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Jost:wght@300;400;500;600&family=Dancing+Script:wght@500;700&display=swap');
+
+        :root {
+            --blush: #ffe3ec;
+            --blush-2: #ffd0e0;
+            --lavender: #e6def9;
+            --lavender-2: #d8c9f7;
+            --purple-deep: #5b3f8c;
+            --purple-mid: #9b7ede;
+            --gold: #d4af6a;
+            --gold-light: #f0d9a6;
+            --ink: #3a2e4d;
+            --ink-soft: #6e5f8a;
+            --night-1: #1b1436;
+            --night-2: #2c1f4d;
+            --night-3: #3c2a63;
+            --glass: rgba(255, 255, 255, 0.5);
+            --glass-strong: rgba(255, 255, 255, 0.72);
+            --glass-border: rgba(255, 255, 255, 0.65);
+            --shadow-soft: 0 20px 60px rgba(91, 63, 140, 0.18);
+            --font-display: 'Cormorant Garamond', serif;
+            --font-body: 'Jost', sans-serif;
+            --font-script: 'Dancing Script', cursive;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        html {
+            scroll-behavior: smooth;
+            overflow-x: clip;
+            max-width: 100%;
+        }
+
+        body {
+            font-family: var(--font-body);
+            color: var(--ink);
+            background: linear-gradient(180deg, var(--blush) 0%, var(--lavender) 100%);
+            overflow-x: clip;
+            max-width: 100%;
+            min-height: 100vh;
+        }
+        h1,
+        h2,
+        h3 {
+            font-family: var(--font-display);
+            font-weight: 600;
+            letter-spacing: .01em;
+        }
+        .script {
+            font-family: var(--font-script);
+        }
+        button {
+            font-family: var(--font-body);
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+        img {
+            max-width: 100%;
+            display: block;
+        }
+        ::selection {
+            background: var(--purple-mid);
+            color: #fff;
+        }
+
+        /* themed scrollbar */
+        html {
+            scrollbar-color: var(--purple-mid) var(--lavender);
+            scrollbar-width: thin;
+        }
+        ::-webkit-scrollbar {
+            width: 11px;
+            height: 11px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--lavender);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--purple-mid), var(--gold));
+            border-radius: 10px;
+            border: 2px solid var(--lavender);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, var(--purple-deep), var(--gold));
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* ============================================================
+           SHARED — glass panels, chapter frame, eyebrow labels
+           ============================================================ */
+        .chapter {
+            position: relative;
+            min-height: 100vh;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6vh 6vw;
+            overflow: hidden;
+        }
+        /* living, breathing chapter backgrounds — a soft crossfade layer that
+           slowly shifts the mood color and eases back, instead of a static gradient */
+        .chapter::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            opacity: 0;
+            pointer-events: none;
+            animation: chapterBreathe 20s ease-in-out infinite;
+        }
+        @keyframes chapterBreathe {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+        #chapter-welcome::before { background: radial-gradient(ellipse at 50% 20%, var(--lavender-2), var(--blush-2) 70%); }
+        #chapter-countdown::before { background: radial-gradient(ellipse at 50% 25%, var(--blush-2), var(--lavender-2)); animation-delay: -4s; }
+        #chapter-cake::before { background: radial-gradient(ellipse at 50% 15%, var(--lavender-2), var(--blush-2) 75%); animation-delay: -8s; }
+        #chapter-gift::before { background: radial-gradient(ellipse at 50% 30%, var(--blush-2), var(--lavender-2)); animation-delay: -2s; }
+        #chapter-timeline::before { background: linear-gradient(180deg, var(--lavender), var(--blush)); animation-delay: -6s; }
+        #chapter-film::before { background: linear-gradient(180deg, var(--night-3), var(--lavender-2)); animation-delay: -10s; }
+        #chapter-letter::before { background: linear-gradient(200deg, var(--purple-deep) 10%, var(--lavender) 130%); animation-delay: -3s; }
+        #chapter-reasons::before { background: linear-gradient(180deg, var(--night-2), var(--purple-mid)); animation-delay: -9s; }
+        #chapter-constellation::before { background: linear-gradient(180deg, var(--night-1), var(--night-3)); animation-delay: -5s; }
+        #chapter-wishjar::before { background: linear-gradient(180deg, var(--purple-deep), var(--night-1)); animation-delay: -12s; }
+        #chapter-voice::before { background: linear-gradient(180deg, var(--lavender), var(--purple-deep)); animation-delay: -7s; }
+        #chapter-gallery::before { background: linear-gradient(180deg, var(--night-1), var(--night-3)); animation-delay: -11s; }
+        #chapter-finale::before { background: linear-gradient(180deg, #0f0a20, var(--night-1)); animation-delay: -14s; }
+        #chapter-reasons > .reveal,
+        #chapter-constellation > .reveal,
+        #chapter-gallery > .reveal {
+            position: relative;
+            z-index: 2;
+        }
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            box-shadow: var(--shadow-soft);
+        }
+        .eyebrow {
+            font-family: var(--font-body);
+            font-size: .72rem;
+            letter-spacing: .32em;
+            text-transform: uppercase;
+            color: var(--purple-mid);
+            margin-bottom: .9rem;
+            display: inline-block;
+        }
+        .reveal {
+            opacity: 0;
+            transform: translateY(36px);
+            transition: opacity 1.1s cubic-bezier(.2, .7, .2, 1), transform 1.1s cubic-bezier(.2, .7, .2, 1);
+        }
+        .reveal.in-view {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .primary-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .95rem 2.2rem;
+            border-radius: 999px;
+            background: linear-gradient(135deg, var(--purple-mid), var(--purple-deep));
+            color: #fff;
+            font-size: .95rem;
+            letter-spacing: .03em;
+            box-shadow: 0 14px 30px rgba(91, 63, 140, .35);
+            transition: transform .35s ease, box-shadow .35s ease;
+        }
+        .primary-btn:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 20px 40px rgba(91, 63, 140, .45);
+        }
+        .primary-btn:active {
+            transform: translateY(0) scale(.98);
+        }
+
+        /* floating ambient particles (hearts / sparkles / petals) */
+        .ambient {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .ambient span {
+            position: absolute;
+            opacity: .75;
+            animation: drift linear infinite;
+            will-change: transform;
+        }
+        @keyframes drift {
+            0% {
+                transform: translateY(110vh) translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: .8;
+            }
+            90% {
+                opacity: .6;
+            }
+            100% {
+                transform: translateY(-10vh) translateX(40px) rotate(320deg);
+                opacity: 0;
+            }
+        }
+
+        /* progress dots */
+        #chapter-nav {
+            position: fixed;
+            right: 22px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 60;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        #chapter-nav a {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: rgba(91, 63, 140, .28);
+            display: block;
+            transition: all .35s ease;
+            position: relative;
+        }
+        #chapter-nav a.active {
+            background: var(--purple-deep);
+            transform: scale(1.4);
+        }
+        @media (max-width:720px) {
+            #chapter-nav {
+                display: none;
+            }
+        }
+
+        /* ============================================================
+           LOADER — Chapter 1
+           ============================================================ */
+        #loader {
+            position: fixed;
+            inset: 0;
+            z-index: 999;
+            background: linear-gradient(160deg, var(--night-1), var(--purple-deep) 80%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 1s ease, visibility 1s ease;
+        }
+        #loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .loader-mark {
+            font-family: var(--font-script);
+            font-size: 3rem;
+            color: #fff;
+            text-shadow: 0 0 30px rgba(212, 175, 106, .6);
+            margin-bottom: 1.6rem;
+            animation: pulseGlow 2.4s ease-in-out infinite;
+        }
+        @keyframes pulseGlow {
+            0%,
+            100% {
+                text-shadow: 0 0 20px rgba(212, 175, 106, .4);
+            }
+            50% {
+                text-shadow: 0 0 40px rgba(212, 175, 106, .85);
+            }
+        }
+        .loader-bar {
+            width: 220px;
+            height: 2px;
+            background: rgba(255, 255, 255, .2);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .loader-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--gold-light), var(--gold));
+            transition: width .2s ease;
+        }
+        .loader-pct {
+            margin-top: .8rem;
+            font-size: .75rem;
+            letter-spacing: .3em;
+            color: var(--gold-light);
+        }
+        .loader-hearts span {
+            position: absolute;
+            color: var(--gold-light);
+            opacity: 0;
+            font-size: 14px;
+            animation: floatUp 3.2s ease-in infinite;
+        }
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0) scale(.6);
+                opacity: 0;
+            }
+            15% {
+                opacity: .9;
+            }
+            100% {
+                transform: translateY(-140px) scale(1.1);
+                opacity: 0;
+            }
+        }
+
+        /* ============================================================
+           CHAPTER 2 — WELCOME
+           ============================================================ */
+        #chapter-welcome {
+            background: radial-gradient(ellipse at 50% 20%, var(--blush-2), var(--lavender) 70%);
+        }
+        .welcome-card {
+            position: relative;
+            z-index: 3;
+            text-align: center;
+            padding: 3.4rem 3rem;
+            max-width: 560px;
+        }
+        .welcome-card .eyebrow {
+            display: block;
+        }
+        .welcome-card h1 {
+            font-size: clamp(2.4rem, 6vw, 3.6rem);
+            color: var(--purple-deep);
+            line-height: 1.1;
+            margin-bottom: 1rem;
+        }
+        .welcome-card p {
+            color: var(--ink-soft);
+            font-size: 1.05rem;
+            line-height: 1.7;
+            margin-bottom: 2rem;
+        }
+        .cloud {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            filter: blur(1px);
+            opacity: .55;
+            animation: cloudDrift linear infinite;
+        }
+        @keyframes cloudDrift {
+            from {
+                transform: translateX(-20vw);
+            }
+            to {
+                transform: translateX(120vw);
+            }
+        }
+        .butterfly {
+            position: absolute;
+            font-size: 20px;
+            animation: flutter 6s ease-in-out infinite;
+        }
+        @keyframes flutter {
+            0%,
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            25% {
+                transform: translate(20px, -30px) rotate(12deg);
+            }
+            50% {
+                transform: translate(-10px, -55px) rotate(-8deg);
+            }
+            75% {
+                transform: translate(15px, -25px) rotate(10deg);
+            }
+        }
+
+        /* ============================================================
+           CHAPTER — COUNTDOWN TIMER
+           ============================================================ */
+        #chapter-countdown {
+            background: radial-gradient(ellipse at 50% 25%, var(--lavender-2), var(--blush));
+            flex-direction: column;
+            text-align: center;
+        }
+        .countdown-card {
+            position: relative;
+            z-index: 3;
+            padding: 3rem 2.6rem;
+            max-width: 560px;
+        }
+        .countdown-card h2 {
+            color: var(--purple-deep);
+            font-size: clamp(1.8rem, 4vw, 2.4rem);
+            margin-bottom: .5rem;
+        }
+        .countdown-card #countdownSub {
+            color: var(--ink-soft);
+            margin-bottom: 1.8rem;
+        }
+        .countdown-grid {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .cd-unit {
+            min-width: 78px;
+            padding: 1.1rem .6rem;
+            border-radius: 16px;
+            background: var(--glass-strong);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 12px 24px rgba(91, 63, 140, .18);
+        }
+        .cd-num {
+            display: block;
+            font-family: var(--font-display);
+            font-size: 2.1rem;
+            font-weight: 600;
+            color: var(--purple-deep);
+            text-shadow: 0 0 18px rgba(212, 175, 106, .4);
+        }
+        .cd-label {
+            font-size: .68rem;
+            letter-spacing: .2em;
+            text-transform: uppercase;
+            color: var(--purple-mid);
+        }
+        .countdown-done {
+            font-family: var(--font-script);
+            font-size: 2rem;
+            color: var(--purple-deep);
+            margin-top: 1.6rem;
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: all .8s ease;
+        }
+        .countdown-done.show {
+            opacity: 1;
+            max-height: 100px;
+        }
+        .countdown-grid.hide {
+            display: none;
+        }
+
+        /* ============================================================
+           CHAPTER 3 — CAKE / CANDLE
+           ============================================================ */
+        #chapter-cake {
+            background: radial-gradient(ellipse at 50% 15%, var(--blush-2), var(--lavender) 75%);
+            flex-direction: column;
+            text-align: center;
+        }
+        .cake-wrap {
+            position: relative;
+            z-index: 3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .cake-sparkle {
+            position: absolute;
+            font-size: 14px;
+            color: var(--gold);
+            opacity: .7;
+            animation: cakeTwinkle 2.4s ease-in-out infinite;
+        }
+        @keyframes cakeTwinkle {
+            0%,
+            100% {
+                opacity: .25;
+                transform: scale(.85);
+            }
+            50% {
+                opacity: .9;
+                transform: scale(1.1);
+            }
+        }
+        .cake {
+            position: relative;
+            width: 260px;
+            margin: 7.5rem auto 1.2rem;
+        }
+        .tier {
+            position: relative;
+            margin: 0 auto;
+            border-radius: 16px 16px 8px 8px;
+            box-shadow: inset 0 -10px 16px rgba(0, 0, 0, .1), 0 20px 34px rgba(91, 63, 140, .22);
+        }
+        .tier.base {
+            height: 74px;
+            width: 260px;
+            background: linear-gradient(180deg, #fbdcea, #f3aecb);
+        }
+        .tier.mid {
+            height: 64px;
+            width: 200px;
+            background: linear-gradient(180deg, #fdeaf1, #f7c3da);
+            margin-top: -4px;
+        }
+        .tier.top {
+            height: 54px;
+            width: 140px;
+            background: linear-gradient(180deg, #fff5f9, #fbdcea);
+            margin-top: -4px;
+        }
+        .tier-trim {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 8px;
+            height: 6px;
+            background: repeating-linear-gradient(90deg, var(--gold) 0 10px, transparent 10px 20px);
+            opacity: .85;
+        }
+        .drip {
+            position: absolute;
+            top: -8px;
+            left: -6px;
+            right: -6px;
+            height: 20px;
+            background: radial-gradient(circle at 12% 0, transparent 58%, #f2a9c8 60%) 0 0/22px 22px repeat-x;
+            opacity: .95;
+        }
+        .cream {
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 50%;
+            background: #fffdf8;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, .08);
+        }
+        .pearl-row {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -4px;
+            display: flex;
+            justify-content: space-evenly;
+        }
+        .pearl {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, .15), inset 0 -2px 2px rgba(212, 175, 106, .4);
+        }
+        .berry {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #ff9fbb, #d94f7c);
+            box-shadow: 0 3px 5px rgba(0, 0, 0, .15);
+        }
+        .macaron {
+            position: absolute;
+            width: 18px;
+            height: 11px;
+            border-radius: 50%;
+            background: linear-gradient(180deg, #fceccf, #f3d49c);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, .15);
+        }
+        .macaron::after {
+            content: '';
+            position: absolute;
+            left: 1px;
+            right: 1px;
+            top: 4px;
+            height: 3px;
+            background: #fff8ea;
+            border-radius: 50%;
+            opacity: .7;
+        }
+        .gold-dot {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--gold);
+            box-shadow: 0 0 6px var(--gold);
+        }
+        .cake-topper {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 20px;
+            color: var(--gold);
+            text-shadow: 0 0 10px rgba(212, 175, 106, .6);
+            animation: topperFloat 3s ease-in-out infinite;
+        }
+        @keyframes topperFloat {
+            0%,
+            100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            50% {
+                transform: translateX(-50%) translateY(-4px);
+            }
+        }
+        .candle {
+            position: absolute;
+            top: -72px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 11px;
+            height: 50px;
+            border-radius: 3px;
+            cursor: pointer;
+            z-index: 5;
+        }
+        .candle::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 3px;
+            background: repeating-linear-gradient(180deg, #fff 0 6px, #f3d49c 6px 12px);
+        }
+        .flame {
+            position: absolute;
+            top: -24px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 15px;
+            height: 24px;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            background: radial-gradient(circle at 50% 70%, #fff6c8, #ffb347 55%, #ff6b3d 85%);
+            box-shadow: 0 0 20px 7px rgba(255, 170, 60, .65);
+            animation: flicker 1.6s ease-in-out infinite;
+            transform-origin: bottom center;
+        }
+        @keyframes flicker {
+            0%,
+            100% {
+                transform: translateX(-50%) scale(1) rotate(-2deg);
+            }
+            50% {
+                transform: translateX(-50%) scale(1.08, 1.15) rotate(3deg);
+            }
+        }
+        .flame.out {
+            animation: none;
+            opacity: 0;
+            transition: opacity .5s ease;
+        }
+        .smoke {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .7);
+            opacity: 0;
+        }
+        .smoke.rise {
+            animation: smokeRise 1.8s ease-out forwards;
+        }
+        @keyframes smokeRise {
+            0% {
+                opacity: .8;
+                transform: translate(-50%, 0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -70px) scale(6);
+            }
+        }
+        .cake-plate {
+            width: 290px;
+            height: 14px;
+            margin: 0 auto;
+            border-radius: 50%;
+            background: linear-gradient(180deg, #f0d9a6, #c9a35f);
+            box-shadow: 0 12px 24px rgba(91, 63, 140, .25);
+        }
+        .cake-caption {
+            font-size: 1rem;
+            color: var(--ink-soft);
+            margin-top: 1rem;
+            min-height: 1.4em;
+        }
+        .wish-msg {
+            font-family: var(--font-script);
+            font-size: 1.8rem;
+            color: var(--purple-deep);
+            margin-top: 1rem;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all .8s ease;
+        }
+        .wish-msg.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+
+        /* ============================================================
+           CHAPTER 4 — GIFT
+           ============================================================ */
+        #chapter-gift {
+            background: radial-gradient(ellipse at 50% 30%, var(--lavender-2), var(--blush));
+            flex-direction: column;
+            text-align: center;
+        }
+        .gift-wrap {
+            position: relative;
+            z-index: 3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .gift-box {
+            position: relative;
+            width: 160px;
+            height: 120px;
+            margin: 2.2rem auto 1.5rem;
+            cursor: pointer;
+        }
+        .gift-box .lid {
+            position: absolute;
+            top: -26px;
+            left: -10px;
+            width: 180px;
+            height: 34px;
+            background: linear-gradient(135deg, #f6a6c1, #e17ea8);
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(91, 63, 140, .25);
+            transition: transform .9s cubic-bezier(.2, .9, .3, 1.4), opacity .9s ease;
+            transform-origin: center;
+            z-index: 2;
+        }
+        .gift-box .body {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 160px;
+            height: 100px;
+            background: linear-gradient(135deg, #fbc4d9, #ef8fb5);
+            border-radius: 6px;
+            box-shadow: 0 16px 30px rgba(91, 63, 140, .25);
+        }
+        .gift-box .ribbon-v {
+            position: absolute;
+            top: -26px;
+            bottom: 0;
+            left: 50%;
+            width: 18px;
+            transform: translateX(-50%);
+            background: linear-gradient(90deg, var(--gold-light), var(--gold));
+            z-index: 3;
+        }
+        .gift-box .ribbon-h {
+            position: absolute;
+            top: -10px;
+            left: 0;
+            right: 0;
+            height: 18px;
+            background: linear-gradient(180deg, var(--gold-light), var(--gold));
+            z-index: 3;
+        }
+        .gift-box .bow {
+            position: absolute;
+            top: -46px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 30px;
+            z-index: 4;
+        }
+        .gift-box.open .lid {
+            transform: translate(-40px, -160px) rotate(-50deg);
+            opacity: 0;
+        }
+        .gift-msg {
+            font-size: 1.05rem;
+            color: var(--ink-soft);
+            max-width: 420px;
+            margin-top: .6rem;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+        .gift-msg.show {
+            opacity: 1;
+        }
+        .burst {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        /* ============================================================
+           CHAPTER — DAY TO NIGHT SKY STORY (scroll-linked)
+           ============================================================ */
+        #chapter-skystory {
+            height: 300vh;
+            height: 300dvh;
+            display: block;
+            padding: 0;
+        }
+        .sky-stage {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            height: 100dvh;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .sky-bg {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            transition: background .1s linear;
+        }
+        .sky-body {
+            position: absolute;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            left: 8%;
+            top: 60%;
+            box-shadow: 0 0 50px 18px rgba(255, 214, 120, .5);
+            transition: background .3s ease, box-shadow .3s ease;
+            z-index: 2;
+        }
+        .sky-stars {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity .4s ease;
+        }
+        .sky-stars span {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle 3s ease-in-out infinite;
+        }
+        .sky-silhouette {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 22vh;
+            z-index: 2;
+            background: linear-gradient(180deg, transparent, rgba(15, 10, 25, .55) 60%);
+        }
+        .sky-caption {
+            position: relative;
+            z-index: 3;
+            text-align: center;
+            color: #fff;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, .35);
+        }
+        .sky-caption .eyebrow {
+            color: var(--gold-light);
+        }
+        .sky-caption h2 {
+            font-size: clamp(2rem, 5vw, 3rem);
+        }
+        .sky-phase {
+            font-family: var(--font-script);
+            font-size: 1.4rem;
+            margin-top: .6rem;
+        }
+        .sky-cloud {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            opacity: .7;
+            filter: blur(1px);
+            z-index: 1;
+            transition: opacity .4s ease;
+        }
+
+        /* ============================================================
+           CHAPTER 5 — TIMELINE
+           ============================================================ */
+        #chapter-timeline {
+            background: linear-gradient(180deg, var(--blush), var(--lavender));
+            flex-direction: column;
+            padding-top: 10vh;
+            padding-bottom: 10vh;
+            /* IMPORTANT: override the shared .chapter overflow:hidden — on phones the
+               timeline content is often taller than 100vh, and overflow:hidden was
+               silently clipping the bottom items so you couldn't scroll to see them. */
+            overflow: visible;
+            height: auto;
+            min-height: 100vh;
+        }
+        .timeline-head {
+            text-align: center;
+            margin-bottom: 3rem;
+            z-index: 2;
+        }
+        .timeline {
+            position: relative;
+            max-width: 760px;
+            width: 100%;
+            margin: 0 auto;
+            z-index: 2;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, var(--purple-mid), var(--gold));
+            transform: translateX(-50%);
+            box-shadow: 0 0 12px rgba(155, 126, 222, .5);
+        }
+        .tl-item {
+            position: relative;
+            width: 46%;
+            margin-bottom: 3.4rem;
+            padding: 1.6rem 1.6rem;
+        }
+        .tl-item:nth-child(odd) {
+            left: 0;
+            text-align: right;
+        }
+        .tl-item:nth-child(even) {
+            left: 54%;
+            text-align: left;
+        }
+        .tl-item::after {
+            content: '';
+            position: absolute;
+            top: 26px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--gold);
+            box-shadow: 0 0 0 6px rgba(212, 175, 106, .25);
+        }
+        .tl-item:nth-child(odd)::after {
+            right: -38px;
+        }
+        .tl-item:nth-child(even)::after {
+            left: -38px;
+        }
+        .tl-date {
+            font-size: .72rem;
+            letter-spacing: .2em;
+            text-transform: uppercase;
+            color: var(--purple-mid);
+        }
+        .tl-title {
+            font-family: var(--font-display);
+            font-size: 1.4rem;
+            color: var(--purple-deep);
+            margin: .3rem 0 .4rem;
+        }
+        .tl-photo {
+            width: 100%;
+            height: 140px;
+            border-radius: 14px;
+            margin: .6rem 0;
+            background: linear-gradient(135deg, var(--lavender-2), var(--blush-2));
+            overflow: hidden;
+            box-shadow: 0 10px 22px rgba(91, 63, 140, .15);
+        }
+        .tl-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .tl-story {
+            color: var(--ink-soft);
+            font-size: .92rem;
+            line-height: 1.6;
+        }
+        @media (max-width:720px) {
+            .timeline::before {
+                left: 18px;
+            }
+            .tl-item,
+            .tl-item:nth-child(even) {
+                left: 0;
+                width: calc(100% - 46px);
+                margin-left: 46px;
+                text-align: left;
+            }
+            .tl-item::after,
+            .tl-item:nth-child(even)::after {
+                left: -38px;
+            }
+        }
+
+        /* ============================================================
+           CHAPTER — MEMORY FILM (projector / filmstrip)
+           ============================================================ */
+        #chapter-film {
+            background: linear-gradient(180deg, var(--lavender), #2c1f4d);
+            flex-direction: column;
+            text-align: center;
+            color: #fff;
+        }
+        #chapter-film .eyebrow {
+            color: var(--gold-light);
+        }
+        .projector-wrap {
+            position: relative;
+            z-index: 3;
+            width: 100%;
+            max-width: 820px;
+            margin: 0 auto;
+        }
+        .reel-row {
+            display: flex;
+            justify-content: center;
+            gap: 3.2rem;
+            margin-bottom: .6rem;
+        }
+        .reel {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #3a2e4d 30%, #1b1436 70%);
+            border: 3px solid var(--gold);
+            position: relative;
+            animation: reelSpin 4s linear infinite;
+        }
+        .reel::before,
+        .reel::after {
+            content: '';
+            position: absolute;
+            inset: 10px;
+            border-radius: 50%;
+            border: 2px dashed rgba(212, 175, 106, .5);
+        }
+        @keyframes reelSpin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        .filmstrip-frame {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #0f0a20;
+            padding: 14px 0;
+            box-shadow: 0 24px 50px rgba(0, 0, 0, .45);
+        }
+        .filmstrip-frame::before,
+        .filmstrip-frame::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 12px;
+            background-image: repeating-linear-gradient(90deg, #0f0a20 0 8px, var(--gold-light) 8px 14px, #0f0a20 14px 26px);
+            opacity: .5;
+            z-index: 3;
+        }
+        .filmstrip-frame::before {
+            top: 0;
+        }
+        .filmstrip-frame::after {
+            bottom: 0;
+        }
+        .filmstrip-track {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            padding: 0 20px;
+            scrollbar-width: thin;
+        }
+        .filmstrip-track::-webkit-scrollbar {
+            height: 6px;
+        }
+        .filmstrip-track::-webkit-scrollbar-thumb {
+            background: var(--gold);
+            border-radius: 6px;
+        }
+        .film-cell {
+            position: relative;
+            flex: 0 0 auto;
+            width: 200px;
+            height: 150px;
+            scroll-snap-align: center;
+            border: 3px solid #1b1436;
+            outline: 2px solid rgba(212, 175, 106, .5);
+            cursor: pointer;
+            overflow: hidden;
+            /* warm sepia + a hint of teal, clears away on hover/click for a "reveal" effect */
+            filter: sepia(.55) hue-rotate(155deg) saturate(1.35) contrast(1.05);
+            transition: transform .3s ease, filter .5s ease;
+        }
+        .film-cell img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .film-cell:hover,
+        .film-cell.revealed {
+            transform: scale(1.03);
+            filter: sepia(0) hue-rotate(0deg) saturate(1) contrast(1.05);
+        }
+        /* continuous grain runs across the whole filmstrip container for a true
+           vintage-film feel, instead of a static per-frame texture */
+        .filmstrip-frame .reel-grain {
+            position: absolute;
+            inset: 0;
+            z-index: 5;
+            opacity: .15;
+            pointer-events: none;
+            mix-blend-mode: overlay;
+            background-image: radial-gradient(rgba(255, 255, 255, .7) 1px, transparent 1px);
+            background-size: 3px 3px;
+            animation: grainShift .25s steps(3) infinite;
+        }
+        @keyframes grainShift {
+            0% {
+                transform: translate(0, 0);
+            }
+            33% {
+                transform: translate(-2px, 1px);
+            }
+            66% {
+                transform: translate(1px, -2px);
+            }
+            100% {
+                transform: translate(2px, 1px);
+            }
+        }
+        .film-flash {
+            position: fixed;
+            inset: 0;
+            background: #fff;
+            z-index: 400;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .film-flash.flash {
+            animation: flashPop .35s ease;
+        }
+        @keyframes flashPop {
+            0% {
+                opacity: 0;
+            }
+            15% {
+                opacity: .85;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+        .film-caption {
+            margin-top: 1rem;
+            color: var(--gold-light);
+            font-size: .85rem;
+            letter-spacing: .05em;
+        }
+
+        /* ============================================================
+           CHAPTER 6 — LOVE LETTER (signature moment)
+           ============================================================ */
+        #chapter-letter {
+            background: linear-gradient(180deg, var(--lavender), var(--purple-deep) 130%);
+            flex-direction: column;
+            text-align: center;
+            color: #fff;
+            /* do NOT set overflow-y:auto here – only the letter itself scrolls */
+        }
+        #chapter-letter .eyebrow {
+            color: var(--gold-light);
+        }
+        .envelope-wrap {
+            position: relative;
+            z-index: 3;
+        }
+        .envelope {
+            position: relative;
+            width: 280px;
+            height: 190px;
+            margin: 2rem auto;
+            background: linear-gradient(160deg, #fdf6ea, #f3e6cf);
+            border-radius: 8px;
+            box-shadow: 0 24px 50px rgba(0, 0, 0, .35);
+            cursor: pointer;
+        }
+        .envelope .flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            clip-path: polygon(0 0, 100% 0, 50% 55%);
+            background: linear-gradient(160deg, #f6e9d4, #eddab8);
+            transform-origin: top center;
+            transition: transform 1s cubic-bezier(.2, .8, .2, 1);
+            z-index: 3;
+        }
+        .envelope.open .flap {
+            transform: rotateX(180deg);
+        }
+        .seal {
+            position: absolute;
+            top: 38%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #c94f6d, #8a2d47);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, .35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gold-light);
+            font-family: var(--font-script);
+            font-size: .9rem;
+            letter-spacing: .03em;
+            z-index: 4;
+            transition: transform .5s ease, opacity .5s ease;
+        }
+        .envelope.open .seal {
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 0;
+        }
+        .letter-paper {
+            position: absolute;
+            left: 50%;
+            bottom: 6px;
+            transform: translate(-50%, 10px);
+            width: 250px;
+            min-height: 60px;
+            background: #fffdf6;
+            border-radius: 4px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+            opacity: 0;
+            transition: all 1.1s cubic-bezier(.2, .8, .2, 1);
+            z-index: 2;
+            padding: 1rem;
+        }
+        .envelope.open .letter-paper {
+            transform: translate(-50%, -320px);
+            opacity: 1;
+        }
+        .letter-full {
+            max-width: 520px;
+            margin: 2rem auto 0;
+            text-align: left;
+            background: #fffdf6;
+            color: var(--ink);
+            border-radius: 14px;
+            padding: 2.2rem 2.4rem;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, .35);
+            font-family: var(--font-script);
+            font-size: 1.3rem;
+            line-height: 1.85;
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: opacity .8s ease;
+        }
+        /* show the letter and make it scrollable inside */
+        .letter-full.show {
+            opacity: 1;
+            max-height: 70vh;
+            /* up to 70% of viewport height */
+            overflow-y: auto;
+            /* scroll if content is longer */
+            transition: opacity .8s ease, max-height 0s;
+        }
+        .letter-full .cursor {
+            display: inline-block;
+            width: 2px;
+            background: var(--purple-deep);
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+        .petal {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #f7b6cf;
+            border-radius: 50% 0;
+            opacity: .8;
+            animation: petalFall linear infinite;
+        }
+        @keyframes petalFall {
+            0% {
+                transform: translateY(-10vh) rotate(0deg);
+            }
+            100% {
+                transform: translateY(110vh) rotate(300deg);
+            }
+        }
+
+        /* ============================================================
+           CHAPTER 7 — 100 REASONS (flip cards, curated set)
+           ============================================================ */
+        #chapter-reasons {
+            background: linear-gradient(180deg, var(--purple-deep), var(--night-2));
+            color: #fff;
+            flex-direction: column;
+            text-align: center;
+        }
+        #chapter-reasons .eyebrow {
+            color: var(--gold-light);
+        }
+        .reason-count {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            color: var(--gold-light);
+            margin-bottom: 1.2rem;
+            letter-spacing: .05em;
+        }
+        .flip-card {
+            width: 320px;
+            height: 220px;
+            margin: 0 auto;
+            perspective: 1400px;
+            cursor: pointer;
+            --tiltX: 0deg;
+            --tiltY: 0deg;
+            --flip: 0deg;
+        }
+        .flip-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform .7s cubic-bezier(.2, .8, .2, 1);
+            transform-style: preserve-3d;
+            transform: rotateX(var(--tiltX)) rotateY(calc(var(--flip) + var(--tiltY)));
+        }
+        .flip-card.flipped {
+            --flip: 180deg;
+        }
+        .flip-card.tilting .flip-inner {
+            transition: transform .1s ease-out;
+        }
+        .flip-face {
+            position: absolute;
+            inset: 0;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, .35);
+        }
+        .flip-front {
+            background: linear-gradient(135deg, var(--purple-mid), var(--purple-deep));
+            font-family: var(--font-display);
+            font-size: 1.6rem;
+        }
+        .flip-back {
+            background: linear-gradient(135deg, #fff8ef, #fce9d0);
+            color: var(--ink);
+            transform: rotateY(180deg);
+            font-family: var(--font-script);
+            font-size: 1.4rem;
+            line-height: 1.5;
+        }
+        .reason-nav {
+            display: flex;
+            gap: 1.4rem;
+            justify-content: center;
+            margin-top: 1.8rem;
+        }
+        .reason-nav button {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .12);
+            color: #fff;
+            font-size: 1.2rem;
+            transition: background .3s ease;
+        }
+        .reason-nav button:hover {
+            background: rgba(255, 255, 255, .25);
+        }
+
+        /* ============================================================
+           CHAPTER — MEMORY CONSTELLATION
+           ============================================================ */
+        #chapter-constellation {
+            background: linear-gradient(180deg, var(--night-2), var(--night-1));
+            color: #fff;
+            flex-direction: column;
+            text-align: center;
+        }
+        #chapter-constellation .eyebrow {
+            color: var(--gold-light);
+        }
+        .constellation-hint {
+            color: rgba(255, 255, 255, .65);
+            font-size: .85rem;
+            margin-top: .4rem;
+        }
+        .constellation-wrap {
+            position: relative;
+            width: 100%;
+            max-width: 520px;
+            margin: 1.6rem auto 0;
+        }
+        .constellation-wrap svg {
+            width: 100%;
+            height: auto;
+            overflow: visible;
+        }
+        .const-line {
+            stroke: rgba(255, 255, 255, .15);
+            stroke-width: 1.5;
+            fill: none;
+            transition: stroke 1s ease, filter 1s ease;
+        }
+        .const-line.lit {
+            stroke: var(--gold);
+            filter: drop-shadow(0 0 6px rgba(212, 175, 106, .8));
+        }
+        .const-star {
+            cursor: pointer;
+        }
+        .const-star circle {
+            fill: #fff;
+            transition: r .3s ease, filter .3s ease;
+        }
+        .const-star.lit circle {
+            fill: var(--gold-light);
+            filter: drop-shadow(0 0 10px rgba(212, 175, 106, .9));
+        }
+        .const-progress {
+            margin-top: 1rem;
+            font-size: .8rem;
+            letter-spacing: .15em;
+            color: var(--gold-light);
+            text-transform: uppercase;
+        }
+        .const-memory {
+            max-width: 420px;
+            margin: 1.4rem auto 0;
+            padding: 1rem 1.4rem;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, .08);
+            border: 1px solid rgba(255, 255, 255, .18);
+            font-family: var(--font-script);
+            font-size: 1.2rem;
+            min-height: 1.6em;
+        }
+        .const-complete {
+            font-family: var(--font-script);
+            font-size: 1.6rem;
+            color: var(--gold-light);
+            margin-top: 1.2rem;
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: all .8s ease;
+        }
+        .const-complete.show {
+            opacity: 1;
+            max-height: 100px;
+        }
+
+        /* ============================================================
+           CHAPTER — RELATIONSHIP MAP (modal style — clean card)
+           ============================================================ */
+        #chapter-map {
+            overflow: visible;
+        }
+        .map-wrap {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            margin: 1.6rem auto 0;
+            z-index: 2;
+        }
+        .map-canvas {
+            position: relative;
+            background: var(--glass-strong);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2rem 1.2rem;
+            box-shadow: var(--shadow-soft);
+            transition: transform .5s ease;
+        }
+        .map-canvas.zoomed {
+            transform: scale(1.03);
+        }
+        .map-canvas svg {
+            width: 100%;
+            height: auto;
+        }
+        .map-route {
+            stroke: var(--purple-mid);
+            stroke-width: 2;
+            stroke-dasharray: 6 6;
+            fill: none;
+            animation: dashMove 3s linear infinite;
+        }
+        @keyframes dashMove {
+            to {
+                stroke-dashoffset: -24;
+            }
+        }
+        .map-pin {
+            cursor: pointer;
+        }
+        .map-pin circle.dot {
+            fill: var(--gold);
+            stroke: #fff;
+            stroke-width: 2;
+            transition: r .3s ease;
+        }
+        .map-pin:hover circle.dot {
+            r: 9;
+        }
+        .map-pin text {
+            font-family: var(--font-body);
+            font-size: 9px;
+            fill: var(--purple-deep);
+            font-weight: 600;
+        }
+
+        /* Map Memory Modal — clean card style like the image */
+        #mapMemoryModal {
+            position: fixed;
+            inset: 0;
+            z-index: 500;
+            padding: 1.5rem;
+            background: rgba(10, 6, 20, .85);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .4s ease;
+        }
+        #mapMemoryModal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #mapMemoryModal .map-memory-content {
+            background: #fdf8f0;
+            border-radius: 20px;
+            padding: 2.6rem 2.8rem 2.2rem;
+            max-width: 560px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 30px 70px rgba(0, 0, 0, .6);
+            transform: scale(.92) translateY(12px);
+            transition: transform .4s cubic-bezier(.2, .9, .3, 1.2), opacity .4s ease;
+            position: relative;
+            text-align: center;
+        }
+        #mapMemoryModal.show .map-memory-content {
+            transform: scale(1) translateY(0);
+        }
+        .map-memory-content .close-btn {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            line-height: 1;
+            color: rgba(58, 46, 77, .3);
+            cursor: pointer;
+            transition: color .25s ease;
+            padding: 4px 8px;
+        }
+        .map-memory-content .close-btn:hover {
+            color: var(--purple-deep);
+        }
+        .map-memory-content h3 {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--purple-deep);
+            margin-bottom: .8rem;
+            letter-spacing: .02em;
+        }
+        .map-memory-content p {
+            font-family: var(--font-script);
+            font-size: 1.25rem;
+            line-height: 1.85;
+            color: var(--ink);
+            white-space: pre-wrap;
+            margin-bottom: 1.8rem;
+            text-align: left;
+        }
+        .map-memory-content .close-btn-bottom {
+            display: inline-block;
+            padding: .6rem 2.4rem;
+            border-radius: 999px;
+            background: var(--purple-deep);
+            color: #fff;
+            font-family: var(--font-body);
+            font-size: .9rem;
+            font-weight: 500;
+            letter-spacing: .04em;
+            border: none;
+            cursor: pointer;
+            transition: background .25s ease, transform .2s ease;
+            box-shadow: 0 6px 20px rgba(91, 63, 140, .3);
+        }
+        .map-memory-content .close-btn-bottom:hover {
+            background: #4a2f73;
+            transform: scale(1.03);
+        }
+        .map-memory-content .close-btn-bottom:active {
+            transform: scale(.96);
+        }
+
+        /* ============================================================
+           CHAPTER — WISH JAR
+           ============================================================ */
+        #chapter-wishjar {
+            background: linear-gradient(180deg, var(--night-1), var(--purple-deep));
+            color: #fff;
+            flex-direction: column;
+            text-align: center;
+        }
+        #chapter-wishjar .eyebrow {
+            color: var(--gold-light);
+        }
+        .jar-wrap {
+            position: relative;
+            z-index: 3;
+        }
+        .jar {
+            position: relative;
+            width: 210px;
+            height: 250px;
+            margin: 1.6rem auto 0;
+            background: linear-gradient(160deg, rgba(255, 255, 255, .14), rgba(255, 255, 255, .04));
+            border: 2px solid rgba(255, 255, 255, .35);
+            border-radius: 20px 20px 46px 46px/20px 20px 60px 60px;
+            box-shadow: inset 0 0 30px rgba(255, 255, 255, .08), 0 20px 40px rgba(0, 0, 0, .35);
+            overflow: hidden;
+        }
+        .jar-lid {
+            position: absolute;
+            top: -16px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 110px;
+            height: 20px;
+            background: linear-gradient(180deg, var(--gold-light), var(--gold));
+            border-radius: 8px;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, .3);
+        }
+        .jar-star {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--gold-light);
+            box-shadow: 0 0 8px 3px rgba(240, 217, 166, .7);
+            cursor: pointer;
+            animation: jarTwinkle 2.4s ease-in-out infinite;
+            transition: transform .2s ease;
+        }
+        .jar-star:hover {
+            transform: scale(1.6);
+        }
+        .jar-star::before {
+            content: '';
+            position: absolute;
+            inset: -18px;
+        }
+        @keyframes jarTwinkle {
+            0%,
+            100% {
+                opacity: .5;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+        .wish-counter {
+            margin-top: 1.2rem;
+            font-size: .8rem;
+            letter-spacing: .15em;
+            text-transform: uppercase;
+            color: var(--gold-light);
+        }
+        .wish-display {
+            max-width: 420px;
+            margin: 1rem auto 0;
+            padding: 1.1rem 1.5rem;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, .08);
+            border: 1px solid rgba(255, 255, 255, .18);
+            font-family: var(--font-script);
+            font-size: 1.3rem;
+            min-height: 2.2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ============================================================
+           CHAPTER — VOICE MESSAGE
+           ============================================================ */
+        #chapter-voice {
+            background: linear-gradient(180deg, var(--purple-deep), var(--lavender));
+            flex-direction: column;
+            text-align: center;
+        }
+        .voice-card {
+            position: relative;
+            z-index: 3;
+            max-width: 420px;
+            width: 100%;
+            padding: 2.2rem 2rem;
+        }
+        .voice-top {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            margin-bottom: 1.2rem;
+        }
+        .voice-disc {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            flex: 0 0 auto;
+            background: conic-gradient(var(--purple-deep), var(--gold), var(--purple-mid), var(--purple-deep));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: spinDisc 6s linear infinite paused;
+        }
+        .voice-disc.playing {
+            animation-play-state: running;
+        }
+        .voice-disc::after {
+            content: '';
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #fff8ef;
+        }
+        .voice-meta {
+            text-align: left;
+        }
+        .voice-meta .vm-title {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            color: var(--purple-deep);
+        }
+        .voice-meta .vm-sub {
+            font-size: .78rem;
+            color: var(--ink-soft);
+        }
+        .waveform {
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 48px;
+            margin: .6rem 0 1rem;
+        }
+        .waveform span {
+            flex: 1;
+            background: var(--purple-mid);
+            border-radius: 2px;
+            height: 20%;
+            transition: height .15s ease;
+        }
+        .waveform.playing span {
+            animation: waveBounce 1s ease-in-out infinite;
+        }
+        @keyframes waveBounce {
+            0%,
+            100% {
+                transform: scaleY(.4);
+            }
+            50% {
+                transform: scaleY(1);
+            }
+        }
+        .voice-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            justify-content: center;
+        }
+        .voice-controls button {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--purple-deep);
+            color: #fff;
+            font-size: 1rem;
+            transition: transform .25s ease;
+        }
+        .voice-controls button:hover {
+            transform: scale(1.08);
+        }
+        .voice-progress {
+            flex: 1;
+            height: 4px;
+            background: rgba(91, 63, 140, .2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .voice-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--purple-mid);
+        }
+        .voice-note {
+            margin-top: 1rem;
+            font-size: .75rem;
+            color: var(--ink-soft);
+        }
+
+        /* ============================================================
+           CHAPTER 8 — GALLERY
+           ============================================================ */
+        #chapter-gallery {
+            background: linear-gradient(180deg, var(--night-2), var(--night-1));
+            color: #fff;
+            flex-direction: column;
+            text-align: center;
+        }
+        #chapter-gallery .eyebrow {
+            color: var(--gold-light);
+        }
+        .gallery-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.6rem;
+            justify-content: center;
+            max-width: 820px;
+            margin: 2rem auto 0;
+        }
+        .polaroid {
+            background: #fffdf6;
+            padding: 12px 12px 34px;
+            width: 150px;
+            border-radius: 4px;
+            box-shadow: 0 14px 30px rgba(0, 0, 0, .4);
+            transform: rotate(var(--r, 0deg));
+            transition: transform .4s ease, box-shadow .4s ease;
+            cursor: pointer;
+        }
+        .polaroid:hover {
+            transform: rotate(0deg) translateY(-8px) scale(1.05);
+            box-shadow: 0 24px 44px rgba(0, 0, 0, .5);
+        }
+        .polaroid .frame {
+            height: 150px;
+            border-radius: 2px;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--lavender-2), var(--blush-2));
+        }
+        .polaroid .frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .polaroid figcaption {
+            color: var(--ink);
+            font-family: var(--font-script);
+            font-size: .95rem;
+            text-align: center;
+            margin-top: .5rem;
+        }
+
+        /* ============================================================
+           CHAPTER 9 — FINALE / FIREWORKS + ENDING
+           ============================================================ */
+        #chapter-finale {
+            background: linear-gradient(180deg, var(--night-1), #0f0a20);
+            color: #fff;
+            flex-direction: column;
+            text-align: center;
+            min-height: 120vh;
+        }
+        #fireworks-canvas {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+        }
+        .moon {
+            position: absolute;
+            top: 8%;
+            right: 12%;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #fff9e6, #f0dca0 70%);
+            box-shadow: 0 0 60px 20px rgba(255, 244, 214, .35);
+            cursor: pointer;
+            z-index: 2;
+            transition: transform .4s ease;
+        }
+        .moon:hover {
+            transform: scale(1.08);
+        }
+        .star {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle ease-in-out infinite;
+        }
+        @keyframes twinkle {
+            0%,
+            100% {
+                opacity: .25;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+        .finale-content {
+            position: relative;
+            z-index: 3;
+            max-width: 560px;
+            margin: 0 auto;
+            padding-top: 8vh;
+        }
+        .finale-content h2 {
+            font-size: clamp(1.8rem, 4.5vw, 2.6rem);
+            color: var(--gold-light);
+            margin-bottom: 1.2rem;
+        }
+        .finale-content p.script {
+            font-size: 1.5rem;
+            line-height: 1.8;
+            margin-bottom: 1.6rem;
+        }
+        .signature {
+            margin-top: 2.4rem;
+            font-family: var(--font-script);
+            font-size: 1.6rem;
+            color: var(--gold-light);
+        }
+        .moon-secret {
+            position: absolute;
+            z-index: 5;
+            top: 16%;
+            right: 6%;
+            max-width: 220px;
+            background: rgba(255, 255, 255, .08);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, .2);
+            border-radius: 14px;
+            padding: 1rem 1.2rem;
+            font-size: .85rem;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all .5s ease;
+            pointer-events: none;
+        }
+        .moon-secret.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .final-heart {
+            margin-top: 2rem;
+            font-size: 1.8rem;
+            cursor: pointer;
+            display: inline-block;
+            animation: heartbeat 1.8s ease-in-out infinite;
+        }
+        @keyframes heartbeat {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.15);
+            }
+        }
+        .true-msg {
+            margin-top: 1rem;
+            font-size: .95rem;
+            color: var(--gold-light);
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: all .6s ease;
+        }
+        .true-msg.show {
+            opacity: 1;
+            max-height: 100px;
+        }
+
+        /* ============================================================
+           MUSIC PLAYER (placeholder — attach real audio later)
+           ============================================================ */
+        #music-player {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: auto;
+            z-index: 70;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            background: var(--glass-strong);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--glass-border);
+            border-radius: 999px;
+            padding: .5rem .9rem .5rem .55rem;
+            box-shadow: var(--shadow-soft);
+            max-width: calc(100vw - 40px);
+        }
+        #music-player .disc {
+            width: 34px;
+            height: 34px;
+            min-width: 34px;
+            border-radius: 50%;
+            background: conic-gradient(var(--purple-deep), var(--gold), var(--purple-mid), var(--purple-deep));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: spinDisc 6s linear infinite paused;
+        }
+        #music-player.playing .disc {
+            animation-play-state: running;
+        }
+        .disc::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #fff8ef;
+        }
+        @keyframes spinDisc {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        #music-player .mp-info {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+        #music-player button {
+            font-size: .8rem;
+            color: var(--purple-deep);
+            font-weight: 500;
+            padding: 0 .3rem;
+            min-width: 32px;
+            min-height: 32px;
+        }
+        #music-player small {
+            font-size: .6rem;
+            color: var(--ink-soft);
+            display: block;
+            max-width: 90px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #music-player #musicPrev,
+        #music-player #musicNext {
+            font-size: .9rem;
+            min-width: 30px;
+        }
+        #music-player input[type="range"] {
+            width: 60px;
+            accent-color: var(--purple-mid);
+            cursor: pointer;
+        }
+        @media (max-width:520px) {
+            #music-player input[type="range"] { display: none; }
+        }
+
+        /* ============================================================
+           HIDDEN EASTER EGG / COLLECTIBLE SYSTEM
+           ============================================================ */
+        .secret-sparkle {
+            position: absolute;
+            font-size: 15px;
+            cursor: pointer;
+            z-index: 20;
+            opacity: .55;
+            filter: drop-shadow(0 0 4px rgba(212, 175, 106, .6));
+            animation: secretPulse 2.2s ease-in-out infinite;
+            transition: transform .25s ease, opacity .3s ease;
+        }
+        .secret-sparkle:hover {
+            transform: scale(1.3);
+            opacity: 1;
+        }
+        .secret-sparkle::before {
+            content: '';
+            position: absolute;
+            inset: -15px;
+        }
+        .secret-sparkle.found {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(1.8);
+        }
+        @keyframes secretPulse {
+            0%,
+            100% {
+                opacity: .4;
+            }
+            50% {
+                opacity: .85;
+            }
+        }
+        #secretTracker {
+            position: fixed;
+            top: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 70;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            background: var(--glass-strong);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--glass-border);
+            border-radius: 999px;
+            padding: .5rem 1.1rem;
+            font-size: .78rem;
+            color: var(--purple-deep);
+            box-shadow: var(--shadow-soft);
+            letter-spacing: .03em;
+            opacity: 0;
+            transition: opacity .5s ease;
+        }
+        #secretTracker.visible {
+            opacity: 1;
+        }
+        #secretModal {
+            position: fixed;
+            inset: 0;
+            z-index: 300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(15, 10, 25, .72);
+            backdrop-filter: blur(6px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .5s ease;
+            padding: 1.5rem;
+        }
+        #secretModal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #secretModal .secret-panel {
+            max-width: 420px;
+            background: linear-gradient(160deg, #fffdf6, #fce9d0);
+            border-radius: 24px;
+            padding: 2.4rem 2.2rem;
+            text-align: center;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, .5);
+            transform: scale(.9);
+            transition: transform .5s ease;
+        }
+        #secretModal.show .secret-panel {
+            transform: scale(1);
+        }
+        .secret-panel h3 {
+            color: var(--purple-deep);
+            font-size: 1.6rem;
+            margin-bottom: .8rem;
+        }
+        .secret-panel p {
+            font-family: var(--font-script);
+            font-size: 1.3rem;
+            color: var(--ink);
+            line-height: 1.6;
+            margin-bottom: 1.4rem;
+        }
+        .secret-panel button {
+            padding: .7rem 1.8rem;
+            border-radius: 999px;
+            background: var(--purple-deep);
+            color: #fff;
+            font-size: .85rem;
+        }
+
+        /* toast for easter eggs */
+        #toast {
+            position: fixed;
+            bottom: 26px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: rgba(59, 42, 99, .92);
+            color: #fff;
+            padding: .7rem 1.3rem;
+            border-radius: 999px;
+            font-size: .85rem;
+            letter-spacing: .02em;
+            opacity: 0;
+            pointer-events: none;
+            transition: all .4s ease;
+            z-index: 200;
+        }
+        #toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        /* ============================================================
+           TOP PROGRESS BAR
+           ============================================================ */
+        #journeyProgress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            width: 0%;
+            z-index: 90;
+            background: linear-gradient(90deg, var(--purple-mid), var(--gold));
+            box-shadow: 0 0 8px rgba(212, 175, 106, .6);
+            transition: width .12s linear;
+        }
+
+        /* ============================================================
+           THEME TOGGLE (Bloom / Midnight)
+           ============================================================ */
+        #themeToggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 80;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--glass-strong);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-soft);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform .3s ease;
+        }
+        #themeToggle:hover {
+            transform: scale(1.08) rotate(12deg);
+        }
+        #themeOverlay {
+            position: fixed;
+            inset: 0;
+            z-index: 5;
+            pointer-events: none;
+            background: radial-gradient(circle at 50% 0%, rgba(27, 20, 54, .0), rgba(15, 10, 25, .0));
+            opacity: 0;
+            transition: opacity .6s ease;
+            mix-blend-mode: multiply;
+        }
+        body.theme-midnight #themeOverlay {
+            opacity: 1;
+            background: radial-gradient(circle at 50% 0%, rgba(60, 42, 99, .55), rgba(15, 10, 25, .75));
+        }
+        body.theme-midnight #themeToggle {
+            background: rgba(20, 14, 40, .6);
+            color: var(--gold-light);
+            border-color: rgba(255, 255, 255, .2);
+        }
+
+        /* ============================================================
+           CUSTOM HEART CURSOR + TRAIL (desktop only)
+           ============================================================ */
+        @media (pointer:fine) {
+            body.custom-cursor {
+                cursor: none;
+            }
+            #cursorHeart {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 18px;
+                height: 18px;
+                z-index: 9999;
+                pointer-events: none;
+                transform: translate(-50%, -50%);
+                font-size: 16px;
+                color: var(--purple-mid);
+                filter: drop-shadow(0 0 4px rgba(155, 126, 222, .6));
+                transition: transform .06s linear;
+            }
+            .cursor-trail {
+                position: fixed;
+                z-index: 9998;
+                pointer-events: none;
+                font-size: 10px;
+                color: var(--gold);
+                opacity: .8;
+                animation: trailFade .7s ease-out forwards;
+            }
+            @keyframes trailFade {
+                to {
+                    opacity: 0;
+                    transform: translateY(-14px) scale(.4);
+                }
+            }
+        }
+
+        /* ============================================================
+           ACHIEVEMENTS DASHBOARD
+           ============================================================ */
+        #achieveBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 70;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            background: var(--glass-strong);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--glass-border);
+            border-radius: 999px;
+            padding: .6rem 1rem;
+            box-shadow: var(--shadow-soft);
+            font-size: .8rem;
+            color: var(--purple-deep);
+            font-weight: 500;
+        }
+        #achievePanel {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            z-index: 71;
+            width: 280px;
+            max-height: 60vh;
+            overflow-y: auto;
+            background: var(--glass-strong);
+            backdrop-filter: blur(18px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 1.2rem;
+            box-shadow: var(--shadow-soft);
+            opacity: 0;
+            transform: translateY(12px) scale(.96);
+            pointer-events: none;
+            transition: all .35s ease;
+        }
+        #achievePanel.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+        #achievePanel h4 {
+            color: var(--purple-deep);
+            font-size: 1rem;
+            margin-bottom: .7rem;
+        }
+        .achieve-item {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            padding: .5rem 0;
+            border-bottom: 1px solid rgba(91, 63, 140, .1);
+            font-size: .8rem;
+            color: var(--ink-soft);
+        }
+        .achieve-item:last-child {
+            border-bottom: none;
+        }
+        .achieve-item .ai-icon {
+            font-size: 1.1rem;
+            width: 26px;
+            text-align: center;
+            filter: grayscale(1) opacity(.4);
+        }
+        .achieve-item.unlocked .ai-icon {
+            filter: none;
+        }
+        .achieve-item.unlocked {
+            color: var(--ink);
+        }
+        .achieve-item .ai-label {
+            flex: 1;
+        }
+
+        /* ============================================================
+           DAILY LOVE QUOTE
+           ============================================================ */
+        .love-quote {
+            font-family: var(--font-script);
+            font-size: 1.15rem;
+            color: var(--purple-mid);
+            margin-top: 1.4rem;
+            opacity: .9;
+        }
+
+        /* ============================================================
+           SAVE KEEPSAKE
+           ============================================================ */
+        .keepsake-btn {
+            margin-top: 1.6rem;
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .75rem 1.6rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .1);
+            border: 1px solid rgba(255, 255, 255, .3);
+            color: #fff;
+            font-size: .85rem;
+            transition: background .3s ease;
+        }
+        .keepsake-btn:hover {
+            background: rgba(255, 255, 255, .2);
+        }
+
+        /* ============================================================
+           SECRET MEMORY VAULT
+           ============================================================ */
+        .vault-btn {
+            margin-top: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .7rem 1.5rem;
+            border-radius: 999px;
+            background: rgba(212, 175, 106, .15);
+            border: 1px solid rgba(212, 175, 106, .4);
+            color: var(--gold-light);
+            font-size: .82rem;
+        }
+        #vaultModal {
+            position: fixed;
+            inset: 0;
+            z-index: 300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(15, 10, 25, .78);
+            backdrop-filter: blur(6px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .5s ease;
+            padding: 1.5rem;
+        }
+        #vaultModal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #vaultModal .vault-panel {
+            max-width: 440px;
+            background: linear-gradient(160deg, #241a3d, #3c2a63);
+            border: 1px solid rgba(212, 175, 106, .35);
+            border-radius: 24px;
+            padding: 2.4rem 2.2rem;
+            text-align: center;
+            color: #fff;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, .55);
+            transform: scale(.9);
+            transition: transform .5s ease;
+        }
+        #vaultModal.show .vault-panel {
+            transform: scale(1);
+        }
+        .vault-panel h3 {
+            color: var(--gold-light);
+            font-size: 1.5rem;
+            margin-bottom: .8rem;
+        }
+        .vault-panel p {
+            font-family: var(--font-script);
+            font-size: 1.3rem;
+            line-height: 1.7;
+            margin-bottom: 1.4rem;
+        }
+        .vault-panel button {
+            padding: .7rem 1.8rem;
+            border-radius: 999px;
+            background: var(--gold);
+            color: var(--night-1);
+            font-weight: 600;
+            font-size: .85rem;
+        }
+
+        /* ============================================================
+           IMAGE LIGHTBOX
+           ============================================================ */
+        #lightbox {
+            position: fixed;
+            inset: 0;
+            z-index: 500;
+            padding: 2rem;
+            background: rgba(10, 6, 20, .93);
+            backdrop-filter: blur(4px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .4s ease;
+        }
+        #lightbox.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #lightbox img {
+            max-width: 90vw;
+            max-height: 78vh;
+            border-radius: 14px;
+            object-fit: contain;
+            box-shadow: 0 30px 70px rgba(0, 0, 0, .55);
+            transform: scale(.94);
+            transition: transform .4s ease;
+        }
+        #lightbox.show img {
+            transform: scale(1);
+        }
+        #lightboxCaption {
+            color: #fff;
+            margin-top: 1.2rem;
+            font-family: var(--font-script);
+            font-size: 1.3rem;
+            text-align: center;
+            max-width: 70vw;
+        }
+        #lightboxClose {
+            position: absolute;
+            top: 22px;
+            right: 26px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .12);
+            color: #fff;
+            font-size: 1.5rem;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .3s ease;
+        }
+        #lightboxClose:hover {
+            background: rgba(255, 255, 255, .25);
+        }
+        .clickable-photo {
+            cursor: zoom-in;
+        }
+
+        /* ============================================================
+           FILM REEL PLAY TRIGGER
+           ============================================================ */
+        .reel.spinning-fast {
+            animation-duration: 1s;
+        }
+        .reel-play-btn {
+            margin: 1.1rem auto 0;
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .65rem 1.5rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .1);
+            border: 1px solid rgba(255, 255, 255, .28);
+            color: #fff;
+            font-size: .82rem;
+            transition: background .3s ease;
+        }
+        .reel-play-btn:hover {
+            background: rgba(255, 255, 255, .2);
+        }
+        .film-cell.now-playing {
+            outline-color: var(--gold);
+            filter: sepia(0) contrast(1.1);
+            box-shadow: 0 0 0 3px rgba(212, 175, 106, .5);
+        }
+
+        /* ============================================================
+           BACK TO TOP — appears after scrolling past the first chapter
+           ============================================================ */
+        #backToTop {
+            position: fixed;
+            left: 50%;
+            bottom: 20px;
+            transform: translateX(-50%) translateY(24px);
+            z-index: 75;
+            width: 48px;
+            height: 48px;
+            min-width: 44px;
+            min-height: 44px;
+            border-radius: 50%;
+            background: var(--glass-strong);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-soft);
+            color: var(--purple-deep);
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .4s ease, transform .4s ease;
+            animation: backToTopFloat 2.6s ease-in-out infinite;
+        }
+        #backToTop.show {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateX(-50%) translateY(0);
+        }
+        @keyframes backToTopFloat {
+            0%, 100% { box-shadow: var(--shadow-soft); }
+            50% { box-shadow: 0 20px 46px rgba(91, 63, 140, .32); }
+        }
+        body.theme-midnight #backToTop {
+            background: rgba(20, 14, 40, .6);
+            color: var(--gold-light);
+            border-color: rgba(255, 255, 255, .2);
+        }
+        @media (max-width:720px) {
+            #backToTop { bottom: 78px; }
+        }
+
+        /* ultra-narrow screens (small phones, ~360px and below) */
+        @media (max-width:380px) {
+            .flip-card { width: 92vw; max-width: 320px; height: 240px; }
+            .cake { width: 220px; transform: scale(.92); }
+            .cake-plate { width: 250px; }
+            .countdown-grid { gap: .6rem; }
+            .cd-unit { min-width: 66px; padding: .8rem .4rem; }
+            .cd-num { font-size: 1.7rem; }
+            .envelope { width: 240px; }
+            .letter-full { padding: 1.6rem 1.4rem; font-size: 1.15rem; }
+            .jar { width: 180px; height: 220px; }
+            .film-cell { width: 160px; height: 120px; }
+            .voice-card, .glass-card.countdown-card { padding: 1.6rem 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div id="journeyProgress"></div>
+    <div id="themeOverlay"></div>
+    <button id="themeToggle" aria-label="Toggle theme">🌙</button>
+    <div id="cursorHeart">❤</div>
+    <button id="backToTop" aria-label="Back to top">↑</button>
+
+    <button id="achieveBtn">🏆 <span id="achieveCount">0</span>/<span id="achieveTotal">8</span></button>
+    <div id="achievePanel">
+        <h4>Relationship Achievements</h4>
+        <div id="achieveList"></div>
+    </div>
+
+    <div id="lightbox">
+        <button id="lightboxClose" aria-label="Close">×</button>
+        <img id="lightboxImg" src="" alt="">
+        <div id="lightboxCaption"></div>
+    </div>
+
+    <!-- Map Memory Modal — clean card style -->
+    <div id="mapMemoryModal">
+        <div class="map-memory-content">
+            <button class="close-btn" id="mapMemoryClose" aria-label="Close">×</button>
+            <h3 id="mapMemoryTitle"></h3>
+            <p id="mapMemoryText"></p>
+            <button class="close-btn-bottom" id="mapMemoryCloseBottom">Close</button>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         CHAPTER 1 — LOADER
+         ============================================================ -->
+    <div id="loader">
+        <div class="loader-mark">✧ loading a little universe ✧</div>
+        <div class="loader-bar"><div class="loader-bar-fill" id="loaderFill"></div></div>
+        <div class="loader-pct" id="loaderPct">0%</div>
+        <div class="loader-hearts" id="loaderHearts"></div>
+    </div>
+
+    <nav id="chapter-nav">
+        <a href="#chapter-welcome" class="active" data-label="Welcome"></a>
+        <a href="#chapter-countdown" data-label="Countdown"></a>
+        <a href="#chapter-cake" data-label="Cake"></a>
+        <a href="#chapter-gift" data-label="Gift"></a>
+        <a href="#chapter-skystory" data-label="Sky"></a>
+        <a href="#chapter-timeline" data-label="Timeline"></a>
+        <a href="#chapter-film" data-label="Film"></a>
+        <a href="#chapter-letter" data-label="Letter"></a>
+        <a href="#chapter-reasons" data-label="Reasons"></a>
+        <a href="#chapter-constellation" data-label="Constellation"></a>
+        <a href="#chapter-map" data-label="Map"></a>
+        <a href="#chapter-wishjar" data-label="Wish Jar"></a>
+        <a href="#chapter-voice" data-label="Voice"></a>
+        <a href="#chapter-gallery" data-label="Gallery"></a>
+        <a href="#chapter-finale" data-label="Finale"></a>
+    </nav>
+
+    <div id="secretTracker">✧ <span id="secretCount">0</span> / <span id="secretTotal">5</span> secrets found</div>
+    <div id="secretModal">
+        <div class="secret-panel">
+            <h3>You found every secret ✧</h3>
+            <p id="secretMessage">Bbs — thank you for exploring every corner of this, the same way I love exploring every part of you. I love you endlessly. — Mr. Naveen Srishti Rautela</p>
+            <button id="secretModalClose">Close</button>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         CHAPTER 2 — WELCOME
+         ============================================================ -->
+    <section class="chapter" id="chapter-welcome">
+        <div class="ambient" id="ambient-welcome"></div>
+        <div class="welcome-card glass-card reveal">
+            <span class="eyebrow">a little universe, just for you</span>
+            <h1 id="greetingHeadline">Good day, Bby ji</h1>
+            <p>Somewhere between all our ordinary days, this one turned out extraordinary. Before anything else&nbsp;— take a breath, get comfortable, and let me show you something I made for you.</p>
+            <button class="primary-btn" id="startJourneyBtn">Start Our Journey ❤</button>
+            <p style="margin-top:1.4rem; font-family:var(--font-script); font-size:1.1rem; color:var(--purple-mid);">— Your Love</p>
+            <p class="love-quote" id="dailyQuote"></p>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         CHAPTER — COUNTDOWN TIMER
+         ============================================================ -->
+    <section class="chapter" id="chapter-countdown">
+        <div class="ambient" id="ambient-countdown"></div>
+        <div class="glass-card countdown-card reveal">
+            <span class="eyebrow">chapter two</span>
+            <h2>The Countdown</h2>
+            <p id="countdownSub">Counting down to November 4th — your day, Jaanu...</p>
+            <div class="countdown-grid" id="countdownGrid">
+                <div class="cd-unit"><span class="cd-num" id="cdDays">00</span><span class="cd-label">Days</span></div>
+                <div class="cd-unit"><span class="cd-num" id="cdHours">00</span><span class="cd-label">Hours</span></div>
+                <div class="cd-unit"><span class="cd-num" id="cdMins">00</span><span class="cd-label">Minutes</span></div>
+                <div class="cd-unit"><span class="cd-num" id="cdSecs">00</span><span class="cd-label">Seconds</span></div>
+            </div>
+            <p class="countdown-done" id="countdownDone">It's here. Happy Birthday, Darling 🎉</p>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         CHAPTER 3 — CAKE
+         ============================================================ -->
+    <section class="chapter" id="chapter-cake">
+        <div class="ambient" id="ambient-cake"></div>
+        <div class="cake-wrap reveal">
+            <span class="eyebrow">chapter three</span>
+            <h2 style="color:var(--purple-deep); font-size:clamp(1.8rem,4vw,2.4rem);">Happy Birthday, Beautiful</h2>
+            <div class="cake" id="cake">
+                <div class="cake-topper">♡</div>
+
+                <div class="tier top">
+                    <div class="candle" id="candle"><div class="flame" id="flame"></div></div>
+                    <div class="drip"></div>
+                    <div class="pearl-row">
+                        <div class="pearl"></div><div class="pearl"></div><div class="pearl"></div><div class="pearl"></div><div class="pearl"></div>
+                    </div>
+                </div>
+
+                <div class="tier mid">
+                    <div class="cream" style="width:190px; height:22px;"></div>
+                    <div class="berry" style="top:-6px; left:14%;"></div>
+                    <div class="berry" style="top:-6px; left:50%;"></div>
+                    <div class="berry" style="top:-6px; left:86%;"></div>
+                    <div class="tier-trim"></div>
+                </div>
+
+                <div class="tier base">
+                    <div class="cream" style="width:250px; height:26px;"></div>
+                    <div class="macaron" style="top:-4px; left:8%;"></div>
+                    <div class="macaron" style="top:-4px; left:38%;"></div>
+                    <div class="macaron" style="top:-4px; left:68%;"></div>
+                    <div class="gold-dot" style="top:-2px; left:22%;"></div>
+                    <div class="gold-dot" style="top:-2px; left:52%;"></div>
+                    <div class="gold-dot" style="top:-2px; left:82%;"></div>
+                    <div class="tier-trim"></div>
+                </div>
+            </div>
+            <div class="cake-plate"></div>
+            <p class="cake-caption" id="cakeCaption">Click the flame to make your wish ✨</p>
+            <p class="wish-msg" id="wishMsg">Your wish is already coming true.</p>
+        </div>
+    </section>
+
+
+    <!-- ============================================================
+         CHAPTER 4 — GIFT
+         ============================================================ -->
+    <section class="chapter" id="chapter-gift">
+        <div class="gift-wrap reveal">
+            <span class="eyebrow">chapter four</span>
+            <h2 style="color:var(--purple-deep); font-size:clamp(1.8rem,4vw,2.4rem);">A Little Something</h2>
+            <div class="gift-box" id="giftBox">
+                <div class="body"></div>
+                <div class="ribbon-v"></div>
+                <div class="ribbon-h"></div>
+                <div class="bow">🎀</div>
+                <div class="lid"></div>
+                <div class="burst" id="giftBurst"></div>
+            </div>
+            <p class="gift-msg" id="giftMsg">Inside isn't a thing — it's a promise: to keep choosing you, on ordinary Tuesdays and on days exactly like this one.</p>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         CHAPTER — DAY TO NIGHT SKY STORY
+         ============================================================ -->
+    <section id="chapter-skystory">
+        <div class="sky-stage">
+            <div class="sky-bg" id="skyBg"></div>
+            <div class="sky-stars" id="skyStars"></div>
+            <div id="skyClouds"></div>
+            <div class="sky-body" id="skyBody"></div>
+            <div class="sky-silhouette"></div>
+            <div class="sky-caption reveal">
+                <span class="eyebrow">chapter five</span>
+                <h2>A Whole Day, Just Like Us</h2>
+                <div class="sky-phase" id="skyPhase">Morning</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         CHAPTER 5 — TIMELINE  (EDIT_ME: replace with your real dates & stories)
+         ============================================================ -->
+    <section class="chapter" id="chapter-timeline" style="align-items:flex-start;">
+        <div class="timeline-head reveal" style="width:100%;">
+            <span class="eyebrow">chapter six</span>
+            <h2 style="color:var(--purple-deep); font-size:clamp(1.8rem,4vw,2.4rem);">The Memories We Made</h2>
+        </div>
+        <div class="timeline" id="timelineList"></div>
+    </section>
+
+    <!-- ============================================================
+         CHAPTER — MEMORY FILM
+         ============================================================ -->
+    <section class="chapter" id="chapter-film">
+        <div class="projector-wrap reveal">
+            <span class="eyebrow">chapter seven</span>
+            <h2 style="font-size:clamp(1.8rem,4vw,2.4rem);">Playing Our Old Reel</h2>
+            <div class="reel-row"><div class="reel" id="reelLeft"></div><div class="reel" id="reelRight"></div></div>
+            <div class="filmstrip-frame">
+                <div class="filmstrip-track" id="filmTrack"></div>
+                <div class="reel-grain"></div>
+            </div>
+            <div class="reel-controls" style="display:flex; align-items:center; justify-content:center; gap:.6rem; flex-wrap:wrap; margin-top:1.1rem;">
+                <button class="reel-play-btn" id="reelPlayBtn" style="margin-top:0;">▶ Play Reel</button>
+                <div class="reel-speed-group" style="display:flex; gap:.4rem;">
+                    <button class="reel-speed-btn" data-speed="0.5" style="min-width:44px; min-height:36px; border-radius:999px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.28); color:#fff; font-size:.78rem;">0.5x</button>
+                    <button class="reel-speed-btn" data-speed="1" style="min-width:44px; min-height:36px; border-radius:999px; background:rgba(255,255,255,.24); border:1px solid rgba(255,255,255,.28); color:#fff; font-size:.78rem;">1x</button>
+                    <button class="reel-speed-btn" data-speed="1.5" style="min-width:44px; min-height:36px; border-radius:999px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.28); color:#fff; font-size:.78rem;">1.5x</button>
+                    <button class="reel-speed-btn" data-speed="2" style="min-width:44px; min-height:36px; border-radius:999px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.28); color:#fff; font-size:.78rem;">2x</button>
+                </div>
+            </div>
+            <p class="film-caption">Click a frame for a closer look ✧ swipe to browse when paused ✧ or press play to watch it run</p>
+        </div>
+    </section>
+    <div class="film-flash" id="filmFlash"></div>
+
+    <!-- ============================================================
+         CHAPTER 6 — LOVE LETTER (signature moment)
+         ============================================================ -->
+    <section class="chapter" id="chapter-letter">
+        <div class="ambient" id="ambient-letter"></div>
+        <div class="envelope-wrap reveal">
+            <span class="eyebrow">chapter eight</span>
+            <h2 style="color:#fff; font-size:clamp(1.8rem,4vw,2.4rem);">A Letter From My Heart</h2>
+            <div class="envelope" id="envelope">
+                <div class="letter-paper"></div>
+                <div class="flap"></div>
+                <div class="seal">NSR</div>
+            </div>
+            <div class="letter-full" id="letterFull"></div>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         CHAPTER 7 — REASONS  (EDIT_ME: swap in your own reasons)
+         ============================================================ -->
+    <section class="chapter" id="chapter-reasons">
+        <div class="reveal" style="width:100%;">
+            <span class="eyebrow">chapter nine</span>
+            <h2 style="color:#fff; font-size:clamp(1.8rem,4vw,2.4rem);">Reasons I Love You</h2>
+            <div class="reason-count" id="reasonCount">1 / 100</div>
+            <div class="flip-card" id="flipCard">
+                <div class="flip-inner">
+                    <div class="flip-face flip-front">Tap to reveal ❤</div>
+                    <div class="flip-face flip-back" id="reasonText"></div>
+                </div>
+            </div>
+            <div class="reason-nav">
+                <button id="reasonPrev">‹</button>
+                <button id="reasonNext">›</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         CHAPTER — MEMORY CONSTELLATION
+         ============================================================ -->
+    <section class="chapter" id="chapter-constellation">
+        <div class="reveal" style="width:100%;">
+            <span class="eyebrow">chapter ten</span>
+            <h2 style="color:#fff; font-size:clamp(1.8rem,4vw,2.4rem);">A Sky Full Of Us</h2>
+            <p class="constellation-hint">Click every star — they'll slowly form something familiar.</p>
+            <div class="constellation-wrap">
+                <svg id="constSvg" viewBox="0 0 400 340"></svg>
+            </div>
+            <div class="const-progress" id="constProgress">0 / 12 stars found</div>
+            <div class="const-memory" id="constMemory">Tap a star to reveal a memory.</div>
+            <div class="const-complete" id="constComplete">You found every star — and somehow, it was always shaped like a heart. ❤</div>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         CHAPTER — RELATIONSHIP MAP
+         ============================================================ -->
+    <section class="chapter" id="chapter-map">
+        <div class="reveal" style="width:100%;">
+            <span class="eyebrow">chapter eleven</span>
+            <h2 style="color:var(--purple-deep); font-size:clamp(1.8rem,4vw,2.4rem);">Everywhere We've Been</h2>
+            <div class="map-wrap">
+                <div class="map-canvas" id="mapCanvas">
+                    <svg id="mapSvg" viewBox="0 0 560 320"></svg>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         CHAPTER — WISH JAR
+         ============================================================ -->
+    <section class="chapter" id="chapter-wishjar">
+        <div class="jar-wrap reveal">
+            <span class="eyebrow">chapter twelve</span>
+            <h2 style="font-size:clamp(1.8rem,4vw,2.4rem);">A Jar Full Of Wishes</h2>
+            <div class="jar" id="jar">
+                <div class="jar-lid"></div>
+            </div>
+            <div class="wish-counter" id="wishCounter">0 wishes discovered</div>
+            <div class="wish-display" id="wishDisplay">Click a star inside the jar to make a wish appear.</div>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         CHAPTER — VOICE MESSAGE
+         ============================================================ -->
+    <section class="chapter" id="chapter-voice">
+        <div class="glass-card voice-card reveal">
+            <span class="eyebrow">chapter thirteen</span>
+            <h2 style="color:var(--purple-deep); font-size:1.6rem; margin-bottom:1rem;">A Message, In My Own Voice</h2>
+            <div class="voice-top">
+                <div class="voice-disc" id="voiceDisc"></div>
+                <div class="voice-meta">
+                    <div class="vm-title">For you, My Wifey</div>
+                    <div class="vm-sub" id="voiceTime">0:00 / 0:00</div>
+                </div>
+            </div>
+            <div class="waveform" id="waveform"></div>
+            <div class="voice-controls">
+                <button id="voiceReplay" aria-label="Replay">↺</button>
+                <button id="voicePlay" aria-label="Play">▶</button>
+                <div class="voice-progress"><div class="voice-progress-fill" id="voiceProgressFill"></div></div>
+            </div>
+            <p class="voice-note">EDIT_ME: add your voice recording file in the code to enable playback.</p>
+        </div>
+    </section>
+    <!-- EDIT_ME: put your voice recording next to this HTML file and set the src below -->
+    <audio id="voiceMsg" preload="none"><source src="" type="audio/mpeg"></audio>
+
+    <!-- ============================================================
+         CHAPTER 8 — GALLERY (placeholder frames — swap in real photos)
+         ============================================================ -->
+    <section class="chapter" id="chapter-gallery">
+        <div class="reveal" style="width:100%;">
+            <span class="eyebrow">chapter fourteen</span>
+            <h2 style="color:#fff; font-size:clamp(1.8rem,4vw,2.4rem);">A Few Favorite Moments</h2>
+            <div class="gallery-grid" id="galleryGrid"></div>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         CHAPTER 9 — FINALE
+         ============================================================ -->
+    <section class="chapter" id="chapter-finale">
+        <canvas id="fireworks-canvas"></canvas>
+        <div class="moon" id="moon"></div>
+        <div class="moon-secret" id="moonSecret">"I'm so glad you exist." — a secret, just for finding the moon. — Your Love</div>
+        <div class="finale-content reveal">
+            <span class="eyebrow" style="color:var(--gold-light);">final chapter</span>
+            <h2>No Matter How Many Birthdays Come</h2>
+            <p class="script">I'll always choose you. Happy Birthday, Shonaaa.</p>
+            <div class="signature">With love, Mr. Naveen Srishti Rautela</div>
+            <div class="final-heart" id="finalHeart">❤</div>
+            <div class="true-msg" id="trueMsg">I'll always be here for you.</div>
+            <br>
+            <button class="keepsake-btn" id="saveKeepsakeBtn">💾 Save This Memory</button>
+            <br>
+            <button class="vault-btn" id="vaultBtn">🔒 Secret Memory Vault</button>
+        </div>
+    </section>
+    <canvas id="keepsakeCanvas" width="900" height="600" style="display:none;"></canvas>
+
+    <div id="vaultModal">
+        <div class="vault-panel">
+            <h3 id="vaultTitle">🔒 Vault Locked</h3>
+            <p id="vaultText">Find every hidden secret and unlock every achievement across the whole journey to open this vault.</p>
+            <button id="vaultClose">Close</button>
+        </div>
+    </div>
+
+    <div id="music-player">
+        <div class="disc"></div>
+        <div class="mp-info">
+            <button id="musicToggle">▶ Play</button>
+            <small id="musicTrackName">add your song files to enable</small>
+        </div>
+        <button id="musicPrev" aria-label="Previous track">⏮</button>
+        <button id="musicNext" aria-label="Next track">⏭</button>
+        <input type="range" id="musicVolume" min="0" max="100" value="70" aria-label="Volume">
+    </div>
+    <!-- EDIT_ME: playlist of 2–3 songs — put your files next to this HTML file and
+         fill in the src for each. Titles show in the player; state (track, volume,
+         play/pause, position) is remembered across reloads via localStorage. -->
+    <audio id="bgMusic" preload="none">
+        <source id="bgMusicSource" src="" type="audio/mpeg">
+    </audio>
+    <div id="toast"></div>
+
+    <script>
+        /* ============================================================
+           DATA — edit this block to personalize everything
+           ============================================================ */
+        const DATA = {
+            /* EDIT_ME: this is the only place you need to change names */
+            senderName: "Mr. Naveen Srishti Rautela",
+            senderShort: "Nikhil",
+            birthdate: "November 4",
+            nicknames: ["Gunnu Bacchu", "Shonaaa", "Bby ji", "Bby", "Bbu", "Bbs", "Jaanu", "Darling", "My Wifey", "Mrs. Gunnu Nikhil Rautela Jii"],
+            timeline: [
+                { date: "The Beginning", title: "How It Started", story: "A conversation that was supposed to be small talk  and somehow never really ended." },
+                { date: "First Adventure", title: "That Trip We Took", story: "Getting lost on purpose, laughing too loud and neither of us minding one bit." },
+                { date: "Some Quiet Wonderful Evenings", title: "Nothing & Everything", story: "Some of my favorite memories aren't big moments they're evening video calls with you ." },
+                { date: "Today", title: "Right Here, Right Now", story: "Another year of you. I'd choose every single one of them again." }
+            ],
+            reasonsCore: [
+                "The way you always find a way to put a smile on my face.",
+                "You remember the small things I mention once and never bring up again.",
+                "You make ordinary days feel like they matter.",
+                "Your patience even on the days I don't deserve it.",
+                "The way you make my silly and interesting names",
+                "You believe in me even when I don't.",
+                "You give the best talks on my worst days and somehow you always make everything feel okay again.",
+                "You're the calm in every storm I've walked into.",
+                "You make me want to be a better person.",
+                "I still get excited to tell you about my day.",
+                "I could watch you work for hours just because I love the way your eyes look when you're completely focused.🌸 ✨",
+                "Simply put, no matter where life takes us, my heart keeps choosing the same person—it's you. It's always been you.🥹❤️"
+            ],
+            letter: `My dearest Jaanu Bacchaa,
+
+        I don't think I'll ever find the right words for everything you mean to me, so here's an attempt anyway.
+
+        Thank you for the ordinary days that you make soo much interesting just by being in my life making my ordinary days feel like something worth remembering. Thank you for staying on the days that were hard and for laughing with me on the days that were easy. Shonaaa, Bby, Bbu, Bbs, Darling whatever I call you it always just means the same thing: mine.
+
+        Today is about celebrating you, Mrs. Gunnu Nikhil Rautela Jii  but truthfully I feel like the lucky one just for getting to know you at all , for getting all the love you gave to me for your care towards me. Thank yoy for everything bacha, for every moment, for everytime you gave me you spend with me and please stay with me like this forever having you feels like I don't have problems and even if I have some problems I also have a person that will resolve it and will always stay with me no matter what so thanks a lottt baccha for everything you have done. I love you a lotttt bby ji.  
+
+        Happiest Birthday My Wifey Jii. I love you more than this page has room for.
+
+        — Mr. Naveen Srishti Rautela`,
+            galleryCount: 12,
+            galleryCaptions: [
+                "golden hour together", "silly & unfiltered", "the trip we still talk about", "just us",
+                "quiet days", "lovely moments", "us, always", "the little things",
+                "that laugh", "golden light", "My lucky charm", "my favorite person"
+            ],
+            /* EDIT_ME: her birthday — set to whichever year's celebration you're counting down to */
+            countdownTargetISO: "2026-11-04T00:00:00",
+            filmFrames: [
+                "The day we met", "Our first trip", "Beginning Of Our Love Story", "A lovely evening",
+                "Some of your best smiles", "My Girl",
+                "Coffee dates & deep talks", "When you made me laugh till I cried",
+                "That rainy evening", "Cooking together (and almost burning the kitchen)",
+                "The first time we danced in the living room", "Your surprise birthday for me",
+                "Stargazing on the terrace", "Watching old movies", "Just us, being silly"
+            ],
+            constellationMemories: [
+                "The first time we talked and stayed together with each other for the whole time.",
+                "The second time we met and I saw you from the balcony and became so shyy just like a newelywed bride.",
+                "That moment when you came to me and talked to me and made me feel soo much comfortable with you.",
+                "That moment when we were laughing together endlessly without any reasons just because of the company of eachother and danced and enjoyed a lottt of eachother's company.",
+                "The moment when I lay my head on your shoulder and we both were blushing little little and were shy too.",
+                "The first photo we ever took together.",
+                "The first time we chatted while being in the same room and than started the journey of our never ending chats.",
+                "The time to say you goodbye, after you went from here I felt soo much empty and when I kind of hugged you and told you not to cry and to go safely I really felt soo sad at that moment and not only I we both were soo much sad about it but that was just the starting of our journey.",
+                "The first time you called me bbs and I was soo much confused that what she wants to say and I asked you about it and you said nothing than after some days I figured it out myself I was reading it word by word just like a nursery student .",
+                "That silly nicknames that keeps getting interesting time to time.",
+                "The time when I realised how many things you have faced and how much mature you are than me even though I am older than you but really you have been through a lot and that made you soo much tough and mature.And that's one of the reason that I want to give you endless happiness I will try my best to always keep you happy my love.",
+                "This exact moment you're reading this, right now. Today is really a very veryy special day for me my gunnu bby's day and I just want to say that I will be with you forever and I will always love you no matter what's the situation my love will never fade away for you mera baccha I love you soo much."
+            ],
+            mapPins: [
+                { x: 70, y: 230, label: "Where It Started", memory: "The place we first met 'Dunagiri Mandir' there couldn't be a better place than that for our meeting I still remember exactly what you were wearing and how we started to talk to each other there while walking down the way from the mandir just by remembering it my heart goes at ease and I feel soo much happy about it. Thank You Dunagiri Maiya for making our hearts find each other.Meeting you has been the most beautiful blessing of my life.💖 " },
+                { x: 180, y: 120, label: "First Trip Together", memory: "Our first trip together was the most memorable trip I ever had in my life , I should say it was the best trip of my life. Two very veryyy beautiful places with the most beautiful person what could be better than this the time I spend there with you was really really memorable I enjoyed evry bit of that trip even though I got scolded there but I wasn't bothered by that either because you were with me the only thing I was thinking and enjoying there was your company I remember how we were going to every place together and enjoying every sight everything together and making our own small fun games and activities and also how we went to meditate with the japanese but there also we can't meditate and had a lots of fun together. The only thing that bothered me about the trip was the goodbye we couldn't say a proper goodbye to eachother as we couldn't see eachother at the time of my departing but after you came to Delhi we properly greeted goodbye to each other and that disappointment was also gone. " },
+                { x: 300, y: 200, label: "Start Of Our Story", memory: "It's a question that none of us know how it started like we were normally talking , joking , playfully teasing , annoying and messing with each other and somehow we got in a relation when it started how it started no one knows but it's the best thing that happend to me we were in love with eachother without even knowing I guess like little by little the circumstances lead us to this and that was really soo lovely like even we were confused how we made it to this point. But I think we both love each other from the very start even thought it was just a little bit and after continous teasing and talking to each other we found out about our feelings and ended up in this state that's my theory I don't know it's true or not but I think something like this happened. " },
+                { x: 410, y: 90, label: "Starting Of Our Calls", memory: "I guess the first call we had was the video call where we didn't get a chance to talk to each other and only our family talked that was a thing I was sad but was laughing about it because I don't know why but I found that really funny because the main purpose of that call was to talk to each other and everyone else had a conversation except us. After that when we called we were both just blushing soo much we couldn't control our feelings and were blushing all the time. And after that we had sooo many video calls and everytime I saw you I find myself blushing and the video call special your kisses hayeeeeeeeee it always makes me even more blush and your chinu chinu eyes hayee they aree very very cute it enhances your cuteness by 100000 times. Whenever I talk to you I literally can't sit with a normal straight face. And your voice notes and voice calls I just want to hear your voice continuously when you talk yk everytime my heart skips a beat your voice is soo sweet as so mesmerizing that I makes me fall for you even more. And your snaps too they just makes my mind blank I don't know how you do it but every single time I see you you somehow become even more beautiful. " },
+                { x: 500, y: 210, label: "Right Here, Now", memory: "Wherever you are that's the place I want to be. I reallyyyy want to be with you so badlyyy I want to celebrate your birthday with you I want to see you smile I want to enjoy your company, sit with you and want to talk you face to face for hours, want to give you soo many hugs and kisses I just want to be with you right now honey. No matter how far apart we are my heart only longs for the day I can finally hold you in my arms. I love you soooo much mera bacchaaa🥹.I can't wait for the day I finally get to be with you.🌹💖💕🌸" }
+            ]
+        };
+
+        /* Procedurally generated wish pool — an "AI-style" template generator so you
+           get 100 varied wishes without hand-writing every line. EDIT_ME: tweak the
+           word lists below to make them even more personal. */
+        function generateWishes() {
+            const openers = ["I wish you", "May you always", "Here's to you having", "I hope you find", "Wishing you", "May this year bring you"];
+            const middles = ["endless laughter", "a heart full of joy", "lovely peaceful mornings", "adventures worth remembering",
+                "people who truly see you", "the courage to chase what you love", "softness on your hardest days", "more reasons to smile",
+                "the safety to be fully yourself", "sunsets that make you feel more lively", "friends who feel like home"
+            ];
+            const closers = ["today and always.", "starting right now.", "more than you know.", "for every year to come.",
+                "because you deserve it.", "and I'll be right here for it.", "— happy birthday.", "with your whole heart."
+            ];
+            const wishes = [];
+            let seed = 0;
+            for (let i = 0; i < 100; i++) {
+                const o = openers[(i * 3 + seed) % openers.length];
+                const m = middles[(i * 7 + 1) % middles.length];
+                const c = closers[(i * 5 + 2) % closers.length];
+                wishes.push(`${o} ${m}, ${c}`);
+            }
+            return wishes;
+        }
+        const WISHES = generateWishes();
+
+        /* Same template approach for the 100 Reasons chapter — the 12 hand-written
+           reasonsCore stay first (most personal), the rest fill out the full 100. */
+        function generateReasons() {
+            const openers = ["I love how you", "You always", "I love the way you", "Something I noticed: you", "I love that you"];
+            const middles = ["make hard days feel lighter", "remember every small details I tell you", "find joy in the smallest things",
+                "stand by me without making it a big deal", "make me feel like home", "still choose me on your hardest days",
+                "say what you mean gently but honestly", "turn ordinary things into favorite memories", "notice when I have any problem and talks to me",
+                "believe the best about people", "carry your own weight and mine too and also help me to learn carry mine", "make me laugh at exactly the right moment",
+                "keep every promise, even the small ones", "make me feel safe enough to be fully myself", "never stop being curious about the world",
+                "show up for the people you love", "turn my worst days into something bearable", "love fiercely and without conditions"
+            ];
+            const list = [];
+            for (let i = 0; i < 88; i++) {
+                const o = openers[(i * 3 + 1) % openers.length];
+                const m = middles[(i * 5 + 2) % middles.length];
+                list.push(`${o} ${m}.`);
+            }
+            return [...DATA.reasonsCore, ...list].slice(0, 100);
+        }
+        const REASONS = generateReasons();
+
+        /* ============================================================
+           UTIL
+           ============================================================ */
+        const $ = (sel, ctx = document) => ctx.querySelector(sel);
+        const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
+
+        function toast(msg) {
+            const t = $('#toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(toast._t);
+            toast._t = setTimeout(() => t.classList.remove('show'), 2400);
+        }
+
+        function openLightbox(src, caption) {
+            const box = $('#lightbox'),
+                img = $('#lightboxImg'),
+                cap = $('#lightboxCaption');
+            img.src = src;
+            img.alt = caption || '';
+            cap.textContent = caption || '';
+            box.classList.add('show');
+        }
+        (function lightboxSetup() {
+            const box = $('#lightbox');
+            $('#lightboxClose').addEventListener('click', () => box.classList.remove('show'));
+            box.addEventListener('click', (e) => { if (e.target === box) box.classList.remove('show'); });
+            window.addEventListener('keydown', (e) => { if (e.key === 'Escape') box.classList.remove('show'); });
+        })();
+
+        /* ============================================================
+           CHAPTER 1 — LOADER
+           ============================================================ */
+        (function loader() {
+            const fill = $('#loaderFill'),
+                pct = $('#loaderPct'),
+                heartsWrap = $('#loaderHearts');
+            for (let i = 0; i < 10; i++) {
+                const h = document.createElement('span');
+                h.textContent = '♥';
+                h.style.left = Math.random() * 100 + '%';
+                h.style.bottom = '20%';
+                h.style.animationDelay = (Math.random() * 3) + 's';
+                heartsWrap.appendChild(h);
+            }
+            let p = 0;
+            const iv = setInterval(() => {
+                p += Math.random() * 10 + 4;
+                if (p >= 100) { p = 100;
+                    clearInterval(iv);
+                    setTimeout(() => $('#loader').classList.add('hidden'), 500); }
+                fill.style.width = p + '%';
+                pct.textContent = Math.floor(p) + '%';
+            }, 160);
+        })();
+
+        /* greeting by time of day, using a random nickname each visit */
+        (function greet() {
+            const h = new Date().getHours();
+            const el = $('#greetingHeadline');
+            const nick = DATA.nicknames[Math.floor(Math.random() * DATA.nicknames.length)];
+            let lead;
+            if (h < 5) lead = "You're up late";
+            else if (h < 12) lead = "Good morning";
+            else if (h < 17) lead = "Good afternoon";
+            else if (h < 21) lead = "Good evening";
+            else lead = "Good day";
+            el.textContent = `${lead}, ${nick}`;
+        })();
+
+        /* ============================================================
+           AMBIENT PARTICLES (hearts / sparkles / clouds / butterflies)
+           ============================================================ */
+        function spawnAmbient(container, { count = 14, chars = ['♥'], minSize = 10, maxSize = 22, minDur = 8, maxDur = 16, color = null } = {}) {
+            const el = document.getElementById(container);
+            if (!el) return;
+            for (let i = 0; i < count; i++) {
+                const s = document.createElement('span');
+                s.textContent = chars[Math.floor(Math.random() * chars.length)];
+                s.style.left = Math.random() * 100 + '%';
+                const size = minSize + Math.random() * (maxSize - minSize);
+                s.style.fontSize = size + 'px';
+                s.style.animationDuration = (minDur + Math.random() * (maxDur - minDur)) + 's';
+                s.style.animationDelay = (Math.random() * 10) + 's';
+                if (color) s.style.color = color;
+                el.appendChild(s);
+            }
+        }
+        spawnAmbient('ambient-welcome', { count: 16, chars: ['♥', '✧', '❀'], color: '#c98fd1' });
+        spawnAmbient('ambient-letter', { count: 18, chars: ['❀', '✿'], color: '#f7b6cf' });
+        spawnAmbient('ambient-cake', { count: 12, chars: ['✨', '✧'], color: '#d4af6a', minSize: 10, maxSize: 18 });
+
+        /* clouds + butterflies for welcome chapter */
+        (function welcomeExtras() {
+            const wrap = $('#chapter-welcome');
+            for (let i = 0; i < 4; i++) {
+                const c = document.createElement('div');
+                c.className = 'cloud';
+                const w = 80 + Math.random() * 100,
+                    hgt = w * 0.4;
+                c.style.width = w + 'px';
+                c.style.height = hgt + 'px';
+                c.style.top = (8 + Math.random() * 30) + '%';
+                c.style.animationDuration = (40 + Math.random() * 30) + 's';
+                c.style.animationDelay = (-Math.random() * 40) + 's';
+                wrap.appendChild(c);
+            }
+            for (let i = 0; i < 3; i++) {
+                const b = document.createElement('div');
+                b.className = 'butterfly';
+                b.textContent = '🦋';
+                b.style.left = (10 + Math.random() * 80) + '%';
+                b.style.top = (55 + Math.random() * 30) + '%';
+                b.style.animationDelay = (Math.random() * 4) + 's';
+                wrap.appendChild(b);
+            }
+        })();
+
+        /* ============================================================
+           SCROLL REVEAL
+           ============================================================ */
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in-view'); });
+        }, { threshold: 0.25 });
+        $$('.reveal').forEach(el => io.observe(el));
+
+        /* chapter nav active state */
+        const navLinks = $$('#chapter-nav a');
+        const navObserver = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    const link = navLinks.find(l => l.getAttribute('href') === '#' + e.target.id);
+                    if (link) link.classList.add('active');
+                }
+            });
+        }, { threshold: 0.5 });
+        $$('.chapter').forEach(s => navObserver.observe(s));
+
+        $('#startJourneyBtn').addEventListener('click', () => {
+            $('#chapter-cake').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        /* ============================================================
+           CHAPTER — COUNTDOWN TIMER
+           ============================================================ */
+        spawnAmbient('ambient-countdown', { count: 10, chars: ['🎈'], minSize: 26, maxSize: 40, minDur: 10, maxDur: 18 });
+        (function countdown() {
+            const target = new Date(DATA.countdownTargetISO).getTime();
+            const grid = $('#countdownGrid'),
+                done = $('#countdownDone'),
+                sub = $('#countdownSub');
+            let finished = false;
+
+            function tick() {
+                const now = Date.now();
+                const diff = target - now;
+                if (diff <= 0) {
+                    if (!finished) {
+                        finished = true;
+                        grid.classList.add('hide');
+                        sub.style.display = 'none';
+                        done.classList.add('show');
+                        confettiBurst($('#chapter-countdown'), 90);
+                    }
+                    return;
+                }
+                const d = Math.floor(diff / 86400000);
+                const h = Math.floor((diff % 86400000) / 3600000);
+                const m = Math.floor((diff % 3600000) / 60000);
+                const s = Math.floor((diff % 60000) / 1000);
+                $('#cdDays').textContent = String(d).padStart(2, '0');
+                $('#cdHours').textContent = String(h).padStart(2, '0');
+                $('#cdMins').textContent = String(m).padStart(2, '0');
+                $('#cdSecs').textContent = String(s).padStart(2, '0');
+                requestAnimationFrame(() => setTimeout(tick, 1000));
+            }
+            tick();
+        })();
+
+        /* ============================================================
+           CHAPTER 3 — CANDLE BLOW
+           ============================================================ */
+        (function candle() {
+            const candleEl = $('#candle'),
+                flame = $('#flame'),
+                caption = $('#cakeCaption'),
+                wishMsg = $('#wishMsg'),
+                cake = $('#cake');
+            let blown = false;
+
+            function blowOut() {
+                if (blown) return;
+                blown = true;
+                flame.classList.add('out');
+                for (let i = 0; i < 6; i++) {
+                    const s = document.createElement('div');
+                    s.className = 'smoke';
+                    s.style.left = (48 + Math.random() * 4) + '%';
+                    cake.appendChild(s);
+                    setTimeout(() => s.classList.add('rise'), i * 120);
+                    setTimeout(() => s.remove(), 2200 + i * 120);
+                }
+                caption.textContent = 'Your wish has been sent into the world 🕯️';
+                wishMsg.classList.add('show');
+                confettiBurst($('#chapter-cake'), 60);
+            }
+            candleEl.addEventListener('click', blowOut);
+        })();
+
+        /* ============================================================
+           CHAPTER — DAY TO NIGHT SKY STORY (scroll-linked — FIXED FOR MOBILE)
+           ============================================================ */
+        (function skyStory() {
+            const section = $('#chapter-skystory');
+            const bg = $('#skyBg'),
+                body = $('#skyBody'),
+                stars = $('#skyStars'),
+                phaseLabel = $('#skyPhase'),
+                cloudsWrap = $('#skyClouds');
+            if (!section) return;
+
+            // Generate stars
+            for (let i = 0; i < 60; i++) {
+                const s = document.createElement('span');
+                s.style.left = Math.random() * 100 + '%';
+                s.style.top = Math.random() * 70 + '%';
+                s.style.animationDelay = (Math.random() * 3) + 's';
+                stars.appendChild(s);
+            }
+            // Generate clouds
+            for (let i = 0; i < 5; i++) {
+                const c = document.createElement('div');
+                c.className = 'sky-cloud';
+                const w = 70 + Math.random() * 90;
+                c.style.width = w + 'px';
+                c.style.height = (w * 0.4) + 'px';
+                c.style.left = (Math.random() * 90) + '%';
+                c.style.top = (10 + Math.random() * 25) + '%';
+                cloudsWrap.appendChild(c);
+            }
+
+            // Color helpers
+            function lerp(a, b, t) { return a + (b - a) * t; }
+
+            function lerpColor(c1, c2, t) {
+                const p = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+                const [r1, g1, b1] = p(c1),
+                    [r2, g2, b2] = p(c2);
+                return `rgb(${Math.round(lerp(r1,r2,t))},${Math.round(lerp(g1,g2,t))},${Math.round(lerp(b1,b2,t))})`;
+            }
+
+            const stops = [
+                { at: 0.00, top: '#a8d8ff', bottom: '#fff3d6', label: 'Morning', sun: true },
+                { at: 0.12, top: '#6ec1ff', bottom: '#ffe9b0', label: 'Afternoon', sun: true },
+                { at: 0.25, top: '#ff9a76', bottom: '#ffd36e', label: 'Sunset', sun: true },
+                { at: 0.36, top: '#ff7e5f', bottom: '#feb47b', label: 'Golden Hour', sun: true },
+                { at: 0.46, top: '#6a4c93', bottom: '#ff9a76', label: 'Evening', sun: false },
+                { at: 0.58, top: '#1b1436', bottom: '#3c2a63', label: 'Night', sun: false },
+                { at: 1.00, top: '#0f0a20', bottom: '#1b1436', label: 'Under The Stars', sun: false }
+            ];
+
+            let lastLabel = '';
+
+            // Compute scroll progress live from the DOM every time — no cached
+            // offsets. Caching sectionTop/sectionHeight once was the actual bug:
+            // any layout shift mid-scroll (mobile address bar collapsing, fonts
+            // loading, etc.) silently invalidated the cached numbers, so the
+            // color math would freeze on a stale value even though the phase
+            // label kept advancing independently. Reading getBoundingClientRect()
+            // fresh each frame makes this self-correcting no matter what the
+            // viewport does.
+            function update() {
+                const rect = section.getBoundingClientRect();
+                const winH = window.innerHeight;
+                const total = rect.height - winH;
+                const scrolled = -rect.top;
+                const progress = Math.min(1, Math.max(0, scrolled / (total || 1)));
+
+                // Background gradient
+                let seg = stops[0];
+                for (let i = 0; i < stops.length - 1; i++) {
+                    if (progress >= stops[i].at && progress <= stops[i + 1].at) {
+                        const t = (progress - stops[i].at) / (stops[i + 1].at - stops[i].at || 1);
+                        bg.style.background =
+                            `linear-gradient(180deg, ${lerpColor(stops[i].top, stops[i+1].top, t)}, ${lerpColor(stops[i].bottom, stops[i+1].bottom, t)})`;
+                        seg = t < 0.5 ? stops[i] : stops[i + 1];
+                        break;
+                    }
+                }
+                if (progress >= 1) {
+                    bg.style.background = `linear-gradient(180deg, ${stops[6].top}, ${stops[6].bottom})`;
+                }
+
+                // Sun/Moon position
+                const left = 5 + progress * 88;
+                const top = 66 - Math.sin(progress * Math.PI) * 48;
+                body.style.left = left + '%';
+                body.style.top = top + '%';
+                const isMoon = progress > 0.5;
+                body.style.background = isMoon ?
+                    'radial-gradient(circle at 35% 30%, #fff9e6, #f0dca0 70%)' :
+                    'radial-gradient(circle at 35% 30%, #fffbe0, #ffcf6b 70%)';
+                body.style.boxShadow = isMoon ?
+                    '0 0 40px 14px rgba(255,244,214,.4)' :
+                    '0 0 60px 22px rgba(255,200,90,.6)';
+
+                // Stars + clouds — synced to the new evening(0.46)/night(0.58) timing
+                stars.style.opacity = Math.max(0, (progress - 0.5) / 0.5);
+                cloudsWrap.style.opacity = Math.max(0, 1 - progress / 0.45);
+
+                // Phase label
+                if (seg.label !== lastLabel) {
+                    lastLabel = seg.label;
+                    phaseLabel.textContent = seg.label;
+                }
+            }
+
+            // Throttled scroll listener with passive:true for mobile performance
+            let ticking = false;
+            function requestUpdate() {
+                if (!ticking) {
+                    ticking = true;
+                    requestAnimationFrame(function() {
+                        update();
+                        ticking = false;
+                    });
+                }
+            }
+            window.addEventListener('scroll', requestUpdate, { passive: true });
+            // resize / orientation change (mobile address bar collapsing, etc.) —
+            // just re-run update(), which reads live layout, so there's nothing
+            // to re-cache and nothing that can go stale
+            window.addEventListener('resize', requestUpdate);
+            window.addEventListener('orientationchange', () => setTimeout(requestUpdate, 300));
+
+            // Also update on load and after any layout shift
+            update();
+            // Re-run after fonts and images load
+            window.addEventListener('load', update);
+            // And after a small delay for mobile Safari
+            setTimeout(update, 500);
+        })();
+
+        /* ============================================================
+           CHAPTER 4 — GIFT OPEN
+           ============================================================ */
+        (function gift() {
+            const box = $('#giftBox'),
+                msg = $('#giftMsg');
+            let opened = false;
+            box.addEventListener('click', () => {
+                if (opened) return;
+                opened = true;
+                box.classList.add('open');
+                setTimeout(() => {
+                    msg.classList.add('show');
+                    confettiBurst($('#chapter-gift'), 70);
+                }, 500);
+            });
+        })();
+
+        /* ============================================================
+           CHAPTER 5 — TIMELINE RENDER (with lightbox on photo click)
+           ============================================================ */
+        (function timeline() {
+            const wrap = $('#timelineList');
+            DATA.timeline.forEach((item, i) => {
+                const el = document.createElement('div');
+                el.className = 'tl-item reveal';
+                el.innerHTML = `
+              <div class="tl-date">${item.date}</div>
+              <div class="tl-title">${item.title}</div>
+              <div class="tl-photo"><img src="https://picsum.photos/seed/timeline${i+1}/400/300" alt="${item.title} — replace this photo in the code" loading="lazy"></div>
+              <div class="tl-story">${item.story}</div>
+            `;
+                // open lightbox when image clicked
+                el.querySelector('.tl-photo img').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openLightbox(e.target.src, item.title);
+                });
+                wrap.appendChild(el);
+                io.observe(el);
+            });
+        })();
+
+        /* ============================================================
+           CHAPTER — MEMORY FILM (with lightbox, more frames, smooth play)
+           ============================================================ */
+        (function film() {
+            const track = $('#filmTrack'),
+                flash = $('#filmFlash');
+            if (!track) return;
+            const isMobile = window.matchMedia('(max-width:720px)').matches;
+            const frames = [];
+            DATA.filmFrames.forEach((caption, i) => {
+                const cell = document.createElement('div');
+                cell.className = 'film-cell';
+                cell.innerHTML =
+                    `<img src="https://picsum.photos/seed/film${i+1}/300/220" alt="${caption} — replace this photo in the code" loading="lazy">`;
+                cell.title = caption;
+                cell.addEventListener('click', (e) => {
+                    const img = cell.querySelector('img');
+                    cell.classList.add('revealed');
+                    openLightbox(img.src, caption);
+                    flash.classList.remove('flash');
+                    void flash.offsetWidth;
+                    flash.classList.add('flash');
+                });
+                track.appendChild(cell);
+                frames.push(cell);
+            });
+
+            const reelLeft = $('#reelLeft'),
+                reelRight = $('#reelRight');
+            const playBtn = $('#reelPlayBtn');
+            let playing = false;
+            let playInterval = null;
+            let currentFrame = 0;
+            // base auto-scroll pace: a touch slower on small screens for a smoother
+            // feel where scroll-snap has more work to do
+            let speedMultiplier = 1;
+            const baseInterval = isMobile ? 2000 : 1500;
+
+            function currentInterval() { return baseInterval / speedMultiplier; }
+
+            function stopReel() {
+                if (playInterval) clearInterval(playInterval);
+                playInterval = null;
+                playing = false;
+                playBtn.textContent = '▶ Play Reel';
+                reelLeft.classList.remove('spinning-fast');
+                reelRight.classList.remove('spinning-fast');
+                frames.forEach(c => c.classList.remove('now-playing'));
+                flash.classList.remove('flash');
+            }
+
+            function goToFrame(i) {
+                currentFrame = i;
+                frames.forEach(c => c.classList.remove('now-playing'));
+                frames[currentFrame].classList.add('now-playing');
+                frames[currentFrame].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                flash.classList.remove('flash');
+                void flash.offsetWidth;
+                flash.classList.add('flash');
+            }
+
+            function scheduleNext() {
+                if (playInterval) clearInterval(playInterval);
+                playInterval = setInterval(() => {
+                    if (currentFrame + 1 >= frames.length) { stopReel(); return; }
+                    goToFrame(currentFrame + 1);
+                }, currentInterval());
+            }
+
+            function playReel() {
+                if (playing) { stopReel(); return; }
+                playing = true;
+                playBtn.textContent = '❚❚ Pause';
+                reelLeft.classList.add('spinning-fast');
+                reelRight.classList.add('spinning-fast');
+                goToFrame(0);
+                scheduleNext();
+            }
+            playBtn.addEventListener('click', playReel);
+
+            // speed selector — 0.5x / 1x / 1.5x / 2x, restarts the interval at the new pace
+            $$('.reel-speed-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    speedMultiplier = parseFloat(btn.dataset.speed);
+                    $$('.reel-speed-btn').forEach(b => b.style.background = 'rgba(255,255,255,.1)');
+                    btn.style.background = 'rgba(255,255,255,.24)';
+                    if (playing) scheduleNext();
+                });
+            });
+
+            // swipe support — manually browse frames with a left/right swipe when paused
+            let touchStartX = 0;
+            track.addEventListener('touchstart', (e) => {
+                if (playing) return;
+                touchStartX = e.touches[0].clientX;
+            }, { passive: true });
+            track.addEventListener('touchend', (e) => {
+                if (playing) return;
+                const dx = e.changedTouches[0].clientX - touchStartX;
+                if (Math.abs(dx) < 40) return;
+                const dir = dx < 0 ? 1 : -1;
+                const next = Math.min(frames.length - 1, Math.max(0, currentFrame + dir));
+                goToFrame(next);
+            }, { passive: true });
+        })();
+
+        /* ============================================================
+           CHAPTER 6 — ENVELOPE + TYPEWRITER LETTER (only letter scrolls)
+           ============================================================ */
+        (function letter() {
+            const envelope = $('#envelope'),
+                full = $('#letterFull');
+            let opened = false;
+            envelope.addEventListener('click', () => {
+                if (opened) return;
+                opened = true;
+                envelope.classList.add('open');
+                setTimeout(() => {
+                    full.classList.add('show');
+                    typewrite(full, DATA.letter);
+                }, 900);
+            });
+
+            function typewrite(el, text) {
+                el.innerHTML = '';
+                const cursor = document.createElement('span');
+                cursor.className = 'cursor';
+                cursor.textContent = '\u00A0';
+                let i = 0;
+                const speed = 22;
+
+                function tick() {
+                    if (i <= text.length) {
+                        el.textContent = text.slice(0, i);
+                        el.appendChild(cursor);
+                        i++;
+                        setTimeout(tick, speed);
+                    } else {
+                        cursor.remove();
+                    }
+                }
+                tick();
+            }
+            /* falling petals */
+            const wrap = $('#chapter-letter');
+            for (let i = 0; i < 14; i++) {
+                const p = document.createElement('div');
+                p.className = 'petal';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDuration = (6 + Math.random() * 8) + 's';
+                p.style.animationDelay = (-Math.random() * 10) + 's';
+                wrap.appendChild(p);
+            }
+        })();
+
+        /* ============================================================
+           CHAPTER 7 — REASONS FLIP CARD
+           ============================================================ */
+        (function reasons() {
+            const card = $('#flipCard'),
+                text = $('#reasonText'),
+                count = $('#reasonCount');
+            let idx = 0;
+
+            function render() {
+                text.textContent = REASONS[idx];
+                count.textContent = `${idx+1} / ${REASONS.length}`;
+            }
+            render();
+            card.addEventListener('click', () => card.classList.toggle('flipped'));
+
+            /* 3D tilt on mouse/touch movement, layered on top of the flip rotation */
+            const maxTilt = 12;
+            function applyTilt(clientX, clientY) {
+                const rect = card.getBoundingClientRect();
+                const px = (clientX - rect.left) / rect.width;
+                const py = (clientY - rect.top) / rect.height;
+                const tiltY = (px - 0.5) * maxTilt * 2;
+                const tiltX = (0.5 - py) * maxTilt * 2;
+                card.classList.add('tilting');
+                card.style.setProperty('--tiltX', tiltX.toFixed(2) + 'deg');
+                card.style.setProperty('--tiltY', tiltY.toFixed(2) + 'deg');
+            }
+            function resetTilt() {
+                card.classList.remove('tilting');
+                card.style.setProperty('--tiltX', '0deg');
+                card.style.setProperty('--tiltY', '0deg');
+            }
+            card.addEventListener('mousemove', (e) => applyTilt(e.clientX, e.clientY));
+            card.addEventListener('mouseleave', resetTilt);
+            card.addEventListener('touchmove', (e) => {
+                if (e.touches && e.touches[0]) applyTilt(e.touches[0].clientX, e.touches[0].clientY);
+            }, { passive: true });
+            card.addEventListener('touchend', resetTilt);
+            $('#reasonNext').addEventListener('click', (e) => {
+                e.stopPropagation();
+                idx = (idx + 1) % REASONS.length;
+                card.classList.remove('flipped');
+                setTimeout(render, 200);
+            });
+            $('#reasonPrev').addEventListener('click', (e) => {
+                e.stopPropagation();
+                idx = (idx - 1 + REASONS.length) % REASONS.length;
+                card.classList.remove('flipped');
+                setTimeout(render, 200);
+            });
+        })();
+
+        /* ============================================================
+           CHAPTER — MEMORY CONSTELLATION
+           ============================================================ */
+        (function constellation() {
+            const svg = $('#constSvg'),
+                progressEl = $('#constProgress'),
+                memoryEl = $('#constMemory'),
+                completeEl = $('#constComplete');
+            if (!svg) return;
+            const n = 12;
+            const points = [];
+            for (let i = 0; i < n; i++) {
+                const t = (i / n) * Math.PI * 2;
+                const hx = 16 * Math.pow(Math.sin(t), 3);
+                const hy = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+                points.push({ x: 200 + hx * 10.5, y: 160 + hy * 10.5 });
+            }
+            const lit = new Array(n).fill(false);
+            const ns = 'http://www.w3.org/2000/svg';
+
+            const lines = [];
+            for (let i = 0; i < n; i++) {
+                const a = points[i],
+                    b = points[(i + 1) % n];
+                const line = document.createElementNS(ns, 'line');
+                line.setAttribute('x1', a.x);
+                line.setAttribute('y1', a.y);
+                line.setAttribute('x2', b.x);
+                line.setAttribute('y2', b.y);
+                line.classList.add('const-line');
+                svg.appendChild(line);
+                lines.push(line);
+            }
+            points.forEach((p, i) => {
+                const g = document.createElementNS(ns, 'g');
+                g.classList.add('const-star');
+                const glow = document.createElementNS(ns, 'circle');
+                glow.setAttribute('cx', p.x);
+                glow.setAttribute('cy', p.y);
+                glow.setAttribute('r', 20);
+                glow.setAttribute('fill', 'transparent');
+                const circle = document.createElementNS(ns, 'circle');
+                circle.setAttribute('cx', p.x);
+                circle.setAttribute('cy', p.y);
+                circle.setAttribute('r', 4.5);
+                g.appendChild(glow);
+                g.appendChild(circle);
+                g.addEventListener('click', () => {
+                    lit[i] = true;
+                    g.classList.add('lit');
+                    memoryEl.textContent = DATA.constellationMemories[i] || 'A memory only we know.';
+                    const foundCount = lit.filter(Boolean).length;
+                    progressEl.textContent = `${foundCount} / ${n} stars found`;
+                    lines.forEach((line, li) => {
+                        if (lit[li] && lit[(li + 1) % n]) line.classList.add('lit');
+                    });
+                    if (foundCount === n) {
+                        completeEl.classList.add('show');
+                        confettiBurst($('#chapter-constellation'), 70);
+                    }
+                });
+                svg.appendChild(g);
+            });
+        })();
+
+        /* ============================================================
+           CHAPTER — RELATIONSHIP MAP (modal-based popup — clean card style)
+           ============================================================ */
+        (function relationshipMap() {
+            const svg = $('#mapSvg'),
+                canvas = $('#mapCanvas');
+            if (!svg) return;
+            const ns = 'http://www.w3.org/2000/svg';
+            const pins = DATA.mapPins;
+
+            let d = `M ${pins[0].x} ${pins[0].y}`;
+            for (let i = 1; i < pins.length; i++) d +=
+                ` Q ${(pins[i-1].x+pins[i].x)/2} ${Math.min(pins[i-1].y,pins[i].y)-40}, ${pins[i].x} ${pins[i].y}`;
+            const path = document.createElementNS(ns, 'path');
+            path.setAttribute('d', d);
+            path.classList.add('map-route');
+            svg.appendChild(path);
+
+            // Modal elements
+            const modal = $('#mapMemoryModal');
+            const modalTitle = $('#mapMemoryTitle');
+            const modalText = $('#mapMemoryText');
+            const modalClose = $('#mapMemoryClose');
+            const modalCloseBottom = $('#mapMemoryCloseBottom');
+
+            function closeMapModal() {
+                modal.classList.remove('show');
+            }
+
+            modalClose.addEventListener('click', closeMapModal);
+            modalCloseBottom.addEventListener('click', closeMapModal);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeMapModal();
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeMapModal();
+            });
+
+            pins.forEach((pin, i) => {
+                const g = document.createElementNS(ns, 'g');
+                g.classList.add('map-pin');
+                const hit = document.createElementNS(ns, 'circle');
+                hit.setAttribute('cx', pin.x);
+                hit.setAttribute('cy', pin.y);
+                hit.setAttribute('r', 20);
+                hit.setAttribute('fill', 'transparent');
+                g.appendChild(hit);
+                const dot = document.createElementNS(ns, 'circle');
+                dot.setAttribute('cx', pin.x);
+                dot.setAttribute('cy', pin.y);
+                dot.setAttribute('r', 7);
+                dot.classList.add('dot');
+                const label = document.createElementNS(ns, 'text');
+                label.setAttribute('x', pin.x);
+                label.setAttribute('y', pin.y - 14);
+                label.setAttribute('text-anchor', 'middle');
+                label.textContent = pin.label;
+                g.appendChild(dot);
+                g.appendChild(label);
+                svg.appendChild(g);
+
+                g.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    // Zoom effect on the canvas
+                    canvas.classList.add('zoomed');
+                    setTimeout(() => canvas.classList.remove('zoomed'), 500);
+                    // Populate modal
+                    modalTitle.textContent = pin.label;
+                    modalText.textContent = pin.memory;
+                    modal.classList.add('show');
+                });
+            });
+        })();
+
+        /* ============================================================
+           CHAPTER — WISH JAR
+           ============================================================ */
+        (function wishJar() {
+            const jar = $('#jar'),
+                counter = $('#wishCounter'),
+                display = $('#wishDisplay');
+            if (!jar) return;
+            let discovered = 0;
+            let pool = [...WISHES];
+            for (let i = 0; i < 28; i++) {
+                const s = document.createElement('div');
+                s.className = 'jar-star';
+                s.style.left = (10 + Math.random() * 80) + '%';
+                s.style.top = (14 + Math.random() * 76) + '%';
+                s.style.animationDelay = (Math.random() * 2) + 's';
+                s.addEventListener('click', () => {
+                    if (pool.length === 0) pool = [...WISHES];
+                    const idx = Math.floor(Math.random() * pool.length);
+                    display.textContent = pool.splice(idx, 1)[0];
+                    discovered++;
+                    counter.textContent = `${Math.min(discovered,100)} wish${discovered===1?'':'es'} discovered`;
+                });
+                jar.appendChild(s);
+            }
+        })();
+
+        /* ============================================================
+           CHAPTER — VOICE MESSAGE
+           ============================================================ */
+        (function voiceMessage() {
+            const audio = $('#voiceMsg'),
+                playBtn = $('#voicePlay'),
+                replayBtn = $('#voiceReplay');
+            const disc = $('#voiceDisc'),
+                waveform = $('#waveform'),
+                fill = $('#voiceProgressFill'),
+                timeEl = $('#voiceTime');
+            if (!audio) return;
+            for (let i = 0; i < 40; i++) {
+                const bar = document.createElement('span');
+                bar.style.height = (16 + Math.random() * 70) + '%';
+                waveform.appendChild(bar);
+            }
+            const hasSource = !!(audio.querySelector('source').getAttribute('src'));
+            let playing = false;
+
+            function fmt(s) { if (!isFinite(s)) return '0:00';
+                const m = Math.floor(s / 60),
+                    sec = Math.floor(s % 60); return `${m}:${String(sec).padStart(2,'0')}`; }
+
+            function setPlaying(v) {
+                playing = v;
+                disc.classList.toggle('playing', v);
+                waveform.classList.toggle('playing', v);
+                playBtn.textContent = v ? '❚❚' : '▶';
+            }
+            playBtn.addEventListener('click', () => {
+                if (!hasSource) { toast('Add your voice recording and set the <source src="..."> in the code ♪'); return; }
+                if (playing) { audio.pause();
+                    setPlaying(false); } else { audio.play().catch(() => toast('Could not play the audio file — check the file path.'));
+                    setPlaying(true); }
+            });
+            replayBtn.addEventListener('click', () => {
+                if (!hasSource) return;
+                audio.currentTime = 0;
+                audio.play();
+                setPlaying(true);
+            });
+            audio.addEventListener('timeupdate', () => {
+                fill.style.width = (audio.duration ? (audio.currentTime / audio.duration * 100) : 0) + '%';
+                timeEl.textContent = `${fmt(audio.currentTime)} / ${fmt(audio.duration)}`;
+            });
+            audio.addEventListener('ended', () => setPlaying(false));
+        })();
+
+        /* ============================================================
+           CHAPTER 8 — GALLERY (polaroids open lightbox)
+           ============================================================ */
+        (function gallery() {
+            const grid = $('#galleryGrid');
+            for (let i = 0; i < DATA.galleryCount; i++) {
+                const fig = document.createElement('figure');
+                fig.className = 'polaroid';
+                fig.style.setProperty('--r', (Math.random() * 10 - 5) + 'deg');
+                const imgSrc = `https://picsum.photos/seed/gallery${i+1}/300/300`;
+                const caption = `memory ${i+1}`;
+                fig.innerHTML =
+                    `<div class="frame"><img src="${imgSrc}" alt="memory ${i+1} — replace this photo in the code" loading="lazy"></div><figcaption>${caption}</figcaption>`;
+                fig.querySelector('img').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openLightbox(imgSrc, caption);
+                });
+                grid.appendChild(fig);
+            }
+        })();
+
+        /* ============================================================
+           CHAPTER 9 — FINALE: stars, moon secret, fireworks, true ending
+           ============================================================ */
+        (function finale() {
+            const finale = $('#chapter-finale');
+            for (let i = 0; i < 70; i++) {
+                const s = document.createElement('div');
+                s.className = 'star';
+                const size = Math.random() * 2 + 1;
+                s.style.width = size + 'px';
+                s.style.height = size + 'px';
+                s.style.left = Math.random() * 100 + '%';
+                s.style.top = Math.random() * 90 + '%';
+                s.style.animationDuration = (2 + Math.random() * 3) + 's';
+                s.style.animationDelay = (Math.random() * 4) + 's';
+                finale.appendChild(s);
+            }
+            $('#moon').addEventListener('click', () => {
+                $('#moonSecret').classList.toggle('show');
+            });
+            let heartClicks = 0;
+            $('#finalHeart').addEventListener('click', () => {
+                heartClicks++;
+                $('#trueMsg').classList.add('show');
+                if (heartClicks === 5) toast('You found a hidden easter egg ✧');
+            });
+        })();
+
+        /* fireworks canvas — colored motion trails, twinkling sparkles, starburst pops */
+        (function fireworks() {
+            const canvas = $('#fireworks-canvas');
+            const ctx = canvas.getContext('2d');
+            const finale = $('#chapter-finale');
+            let particles = [];
+            let running = false;
+            const colors = ['#f6a6c1', '#d4af6a', '#9b7ede', '#fff4d6', '#f78fb3', '#ffffff'];
+
+            function resize() { canvas.width = finale.offsetWidth;
+                canvas.height = finale.offsetHeight; }
+            resize();
+            window.addEventListener('resize', resize);
+
+            function starburstAt(x, y, color, count = 40, speedMin = 1.6, speedMax = 3.8, life = 70, type = 'spark') {
+                for (let i = 0; i < count; i++) {
+                    const angle = (Math.PI * 2 * i) / count + Math.random() * 0.2;
+                    const speed = speedMin + Math.random() * (speedMax - speedMin);
+                    particles.push({
+                        x, y,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        life: life + Math.random() * 30,
+                        age: 0,
+                        color,
+                        type,
+                        size: type === 'sparkle' ? 1 + Math.random() * 1.2 : 1.6 + Math.random() * 1.4,
+                        twinkle: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+
+            function launch() {
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const x = Math.random() * canvas.width;
+                const y = canvas.height * 0.15 + Math.random() * canvas.height * 0.35;
+
+                // main burst with colored trailing sparks
+                starburstAt(x, y, color, 44, 1.8, 3.6, 65, 'spark');
+                // fine golden sparkle dust mixed in for extra shimmer
+                starburstAt(x, y, '#fff4d6', 18, 0.6, 1.8, 90, 'sparkle');
+
+                // secondary starburst pop — a delayed smaller ring for a "double pop" firework look
+                setTimeout(() => {
+                    if (!running) return;
+                    const color2 = colors[Math.floor(Math.random() * colors.length)];
+                    starburstAt(x + (Math.random() * 40 - 20), y + (Math.random() * 30 - 15), color2, 22, 1, 2.2, 45, 'spark');
+                }, 260 + Math.random() * 180);
+            }
+
+            function tick() {
+                if (!running) return;
+                // translucent fill instead of a hard clear — leaves soft colored motion trails
+                ctx.fillStyle = 'rgba(15,10,32,0.22)';
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.globalCompositeOperation = 'lighter';
+
+                particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vx *= 0.985;
+                    p.vy = p.vy * 0.985 + 0.03;
+                    p.age++;
+                    p.twinkle += 0.35;
+                    const alpha = Math.max(0, 1 - p.age / p.life);
+                    const flicker = p.type === 'sparkle' ? (0.5 + Math.sin(p.twinkle) * 0.5) : 1;
+                    ctx.globalAlpha = alpha * flicker;
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                ctx.globalAlpha = 1;
+                ctx.globalCompositeOperation = 'source-over';
+                particles = particles.filter(p => p.age < p.life);
+                if (Math.random() < 0.045) launch();
+                requestAnimationFrame(tick);
+            }
+
+            const finaleObserver = new IntersectionObserver((entries) => {
+                entries.forEach(e => {
+                    if (e.isIntersecting && !running) {
+                        running = true;
+                        ctx.fillStyle = 'rgba(15,10,32,1)';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        launch();
+                        launch();
+                        tick();
+                    } else if (!e.isIntersecting) {
+                        running = false;
+                    }
+                });
+            }, { threshold: 0.3 });
+            finaleObserver.observe(finale);
+        })();
+
+        /* ============================================================
+           CONFETTI BURST (lightweight, no dependency)
+           ============================================================ */
+        function confettiBurst(container, count = 50) {
+            const rect = container.getBoundingClientRect();
+            const colors = ['#f6a6c1', '#d4af6a', '#9b7ede', '#fff4d6', '#f78fb3'];
+            for (let i = 0; i < count; i++) {
+                const el = document.createElement('div');
+                const size = 5 + Math.random() * 6;
+                el.style.position = 'fixed';
+                el.style.left = (rect.left + rect.width / 2 + (Math.random() * 200 - 100)) + 'px';
+                el.style.top = (rect.top + rect.height * 0.3) + 'px';
+                el.style.width = size + 'px';
+                el.style.height = size * 0.6 + 'px';
+                el.style.background = colors[Math.floor(Math.random() * colors.length)];
+                el.style.borderRadius = '2px';
+                el.style.zIndex = 500;
+                el.style.pointerEvents = 'none';
+                const dx = (Math.random() * 2 - 1) * 220;
+                const dy = 200 + Math.random() * 260;
+                const rot = Math.random() * 720 - 360;
+                el.animate([
+                    { transform: 'translate(0,0) rotate(0deg)', opacity: 1 },
+                    { transform: `translate(${dx}px, ${dy}px) rotate(${rot}deg)`, opacity: 0 }
+                ], { duration: 1400 + Math.random() * 700, easing: 'cubic-bezier(.2,.7,.2,1)' });
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), 2200);
+            }
+        }
+
+        /* ============================================================
+           HIDDEN EASTER EGG / COLLECTIBLE SYSTEM
+           ============================================================ */
+        (function secretSystem() {
+            const spots = [
+                { chapter: '#chapter-welcome', top: '14%', left: '8%' },
+                { chapter: '#chapter-cake', top: '18%', right: '10%' },
+                { chapter: '#chapter-gift', top: '70%', left: '12%' },
+                { chapter: '#chapter-timeline', top: '8%', right: '6%' },
+                { chapter: '#chapter-gallery', top: '12%', left: '8%' }
+            ];
+            const tracker = $('#secretTracker'),
+                countEl = $('#secretCount'),
+                totalEl = $('#secretTotal');
+            const modal = $('#secretModal'),
+                modalClose = $('#secretModalClose');
+            totalEl.textContent = spots.length;
+            let found = 0;
+
+            spots.forEach(spot => {
+                const host = $(spot.chapter);
+                if (!host) return;
+                const el = document.createElement('span');
+                el.className = 'secret-sparkle';
+                el.textContent = '✧';
+                el.style.top = spot.top;
+                if (spot.left) el.style.left = spot.left;
+                if (spot.right) el.style.right = spot.right;
+                el.setAttribute('aria-label', 'Hidden secret');
+                el.addEventListener('click', () => {
+                    if (el.classList.contains('found')) return;
+                    el.classList.add('found');
+                    found++;
+                    countEl.textContent = found;
+                    tracker.classList.add('visible');
+                    toast(`A secret, found ✧ (${found}/${spots.length})`);
+                    if (found === spots.length) {
+                        setTimeout(() => modal.classList.add('show'), 500);
+                    }
+                });
+                host.style.position = host.style.position || 'relative';
+                host.appendChild(el);
+            });
+
+            setTimeout(() => tracker.classList.add('visible'), 4000);
+            modalClose.addEventListener('click', () => modal.classList.remove('show'));
+        })();
+
+        /* ============================================================
+           MUSIC PLAYER — playlist of 2–3 songs, volume slider, and
+           persistent state via localStorage (track, position, volume,
+           playing) so it picks back up across reloads.
+           EDIT_ME: fill in the src for each track below with your own
+           song files sitting next to this HTML file.
+           ============================================================ */
+        (function musicPlayer() {
+            const PLAYLIST = [
+                { title: 'Our Song #1', src: '' },
+                { title: 'Our Song #2', src: '' },
+                { title: 'Our Song #3', src: '' }
+            ];
+            const STORAGE_KEY = 'auLittleUniverse_musicState';
+
+            const btn = $('#musicToggle'),
+                prevBtn = $('#musicPrev'),
+                nextBtn = $('#musicNext'),
+                volumeSlider = $('#musicVolume'),
+                trackNameEl = $('#musicTrackName'),
+                player = $('#music-player'),
+                audio = $('#bgMusic'),
+                sourceEl = $('#bgMusicSource');
+
+            function loadState() {
+                try {
+                    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+                } catch (e) { return {}; }
+            }
+            function saveState(partial) {
+                try {
+                    const current = loadState();
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...current, ...partial }));
+                } catch (e) {}
+            }
+
+            const state = loadState();
+            let trackIndex = Number.isInteger(state.trackIndex) ? state.trackIndex : 0;
+            if (trackIndex < 0 || trackIndex >= PLAYLIST.length) trackIndex = 0;
+            let volume = typeof state.volume === 'number' ? state.volume : 70;
+            let wasPlaying = !!state.playing;
+            let playing = false;
+
+            volumeSlider.value = volume;
+            audio.volume = volume / 100;
+
+            function trackHasSource(i) { return !!(PLAYLIST[i] && PLAYLIST[i].src); }
+
+            function loadTrack(i, resumeTime) {
+                trackIndex = i;
+                const track = PLAYLIST[trackIndex];
+                trackNameEl.textContent = track.src ? track.title : `${track.title} (add file to enable)`;
+                sourceEl.setAttribute('src', track.src || '');
+                audio.load();
+                if (resumeTime) {
+                    const setTime = () => { audio.currentTime = resumeTime; audio.removeEventListener('loadedmetadata', setTime); };
+                    audio.addEventListener('loadedmetadata', setTime);
+                }
+                saveState({ trackIndex });
+            }
+
+            function setPlaying(v) {
+                playing = v;
+                player.classList.toggle('playing', v);
+                btn.textContent = v ? '❚❚ Pause' : '▶ Play';
+                saveState({ playing: v });
+            }
+
+            function play() {
+                if (!trackHasSource(trackIndex)) {
+                    toast('Add your song files and set each src in the playlist to hear it here ♪');
+                    return;
+                }
+                audio.play().then(() => setPlaying(true)).catch(() => {
+                    toast('Could not play the audio file — check the file path.');
+                    setPlaying(false);
+                });
+            }
+            function pause() {
+                audio.pause();
+                setPlaying(false);
+            }
+            function next() { loadTrack((trackIndex + 1) % PLAYLIST.length); if (playing) play(); }
+            function prev() { loadTrack((trackIndex - 1 + PLAYLIST.length) % PLAYLIST.length); if (playing) play(); }
+
+            btn.addEventListener('click', () => { playing ? pause() : play(); });
+            nextBtn.addEventListener('click', next);
+            prevBtn.addEventListener('click', prev);
+            audio.addEventListener('ended', next);
+
+            volumeSlider.addEventListener('input', () => {
+                volume = Number(volumeSlider.value);
+                audio.volume = volume / 100;
+                saveState({ volume });
+            });
+
+            // persist playback position periodically so a reload can resume close to where it left off
+            audio.addEventListener('timeupdate', () => {
+                if (Math.floor(audio.currentTime) % 3 === 0) saveState({ currentTime: audio.currentTime });
+            });
+            window.addEventListener('beforeunload', () => saveState({ currentTime: audio.currentTime, playing }));
+
+            // initial load — restore last track/position; only auto-resume playback
+            // if the browser allows it (most require a fresh user gesture, so we
+            // just get everything cued up and let the Play button take over)
+            loadTrack(trackIndex, state.currentTime);
+            if (wasPlaying && trackHasSource(trackIndex)) {
+                audio.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
+            }
+        })();
+
+        /* ============================================================
+           EASTER EGG — press "H" for a Happy-Birthday toast burst
+           ============================================================ */
+        window.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === 'h') {
+                toast('Happiest Birthday Shonaaaa! ♥');
+                confettiBurst(document.body, 90);
+            }
+        });
+
+        /* ============================================================
+           TOP PROGRESS BAR — overall journey scroll progress
+           ============================================================ */
+        (function progressBar() {
+            const bar = $('#journeyProgress');
+
+            function update() {
+                const scrolled = window.scrollY;
+                const max = document.documentElement.scrollHeight - window.innerHeight;
+                bar.style.width = (max > 0 ? Math.min(100, (scrolled / max) * 100) : 0) + '%';
+            }
+            window.addEventListener('scroll', update, { passive: true });
+            window.addEventListener('resize', update);
+            update();
+        })();
+
+        /* ============================================================
+           BACK TO TOP
+           ============================================================ */
+        (function backToTop() {
+            const btn = $('#backToTop');
+            if (!btn) return;
+            function update() {
+                btn.classList.toggle('show', window.scrollY > window.innerHeight * 0.7);
+            }
+            window.addEventListener('scroll', update, { passive: true });
+            update();
+            btn.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        })();
+
+        /* ============================================================
+           THEME TOGGLE — Bloom (light) / Midnight (dark romantic)
+           ============================================================ */
+        (function themeToggle() {
+            const btn = $('#themeToggle');
+            let midnight = false;
+            btn.addEventListener('click', () => {
+                midnight = !midnight;
+                document.body.classList.toggle('theme-midnight', midnight);
+                btn.textContent = midnight ? '☀' : '🌙';
+                toast(midnight ? 'Midnight mode ✧' : 'Bloom mode ✧');
+            });
+        })();
+
+        /* ============================================================
+           CUSTOM HEART CURSOR + TRAIL (desktop / fine-pointer only)
+           ============================================================ */
+        (function cursorTrail() {
+            if (!window.matchMedia('(pointer:fine)').matches) return;
+            document.body.classList.add('custom-cursor');
+            const heart = $('#cursorHeart');
+            let last = 0;
+            window.addEventListener('mousemove', (e) => {
+                heart.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%,-50%)`;
+                const now = Date.now();
+                if (now - last > 60) {
+                    last = now;
+                    const t = document.createElement('div');
+                    t.className = 'cursor-trail';
+                    t.textContent = Math.random() < 0.5 ? '✧' : '❤';
+                    t.style.left = (e.clientX + (Math.random() * 10 - 5)) + 'px';
+                    t.style.top = (e.clientY + (Math.random() * 10 - 5)) + 'px';
+                    document.body.appendChild(t);
+                    setTimeout(() => t.remove(), 750);
+                }
+            });
+        })();
+
+        /* ============================================================
+           DAILY LOVE QUOTE — rotates based on the day, same all day
+           ============================================================ */
+        (function dailyQuote() {
+            const quotes = [
+                "Of all the people I have ever seen, no one has ever made me smile as effortlessly as you do.You are the one I still look at as if I'm seeing something beautiful for the very first time.",
+                "You are my favorite notification.",
+                "Home isn't a place, it's whoever you're with.You are the one who feels like home no matter how far apart we are.",
+                "Every love story is beautiful, but ours is my favorite.",
+                "Of all the people I have ever seen I found forever in your eyes.I never imagined one person could become my favorite hello, my safest place, and my hardest goodbye.",
+                "You're the calm after every storm I've walked through.",
+                "Some people search their whole life for what I found in you."
+            ];
+            const dayIndex = Math.floor(Date.now() / 86400000) % quotes.length;
+            const el = $('#dailyQuote');
+            if (el) el.textContent = `"${quotes[dayIndex]}"`;
+        })();
+
+        /* ============================================================
+           ACHIEVEMENTS DASHBOARD
+           ============================================================ */
+        const Achievements = (function() {
+            const list = [
+                { id: 'cake_master', icon: '🎂', label: 'Cake Master — blew out the candle' },
+                { id: 'gift_explorer', icon: '🎁', label: 'Gift Explorer — opened the gift' },
+                { id: 'memory_collector', icon: '📸', label: 'Memory Collector — reached the timeline' },
+                { id: 'letter_reader', icon: '💌', label: 'Letter Reader — opened the letter' },
+                { id: 'star_explorer', icon: '⭐', label: 'Star Explorer — completed the constellation' },
+                { id: 'wish_maker', icon: '🫙', label: 'Wish Maker — made 5 wishes' },
+                { id: 'firework_lover', icon: '🎆', label: 'Firework Lover — reached the finale' },
+                { id: 'journey_complete', icon: '🏁', label: 'Journey Complete — visited every chapter' }
+            ];
+            const unlocked = new Set();
+            const listEl = $('#achieveList'),
+                countEl = $('#achieveCount'),
+                totalEl = $('#achieveTotal');
+            totalEl.textContent = list.length;
+
+            function render() {
+                listEl.innerHTML = '';
+                list.forEach(a => {
+                    const row = document.createElement('div');
+                    row.className = 'achieve-item' + (unlocked.has(a.id) ? ' unlocked' : '');
+                    row.innerHTML =
+                        `<span class="ai-icon">${a.icon}</span><span class="ai-label">${a.label}</span>`;
+                    listEl.appendChild(row);
+                });
+                countEl.textContent = unlocked.size;
+            }
+
+            function unlock(id) {
+                if (unlocked.has(id)) return;
+                unlocked.add(id);
+                render();
+                const a = list.find(x => x.id === id);
+                if (a) toast(`Achievement unlocked: ${a.icon} ${a.label.split(' — ')[0]}`);
+                if (unlocked.size === list.length) {
+                    setTimeout(() => toast('All achievements unlocked ✧ the vault awaits'), 900);
+                }
+                checkVaultReady();
+            }
+            render();
+            return { unlock, all: () => unlocked.size === list.length, size: () => unlocked.size, total: list.length };
+        })();
+
+        const achieveBtn = $('#achieveBtn'),
+            achievePanel = $('#achievePanel');
+        achieveBtn.addEventListener('click', () => achievePanel.classList.toggle('show'));
+
+        /* wire achievements to existing interactions */
+        $('#candle')?.addEventListener('click', () => Achievements.unlock('cake_master'));
+        $('#giftBox')?.addEventListener('click', () => Achievements.unlock('gift_explorer'));
+        $('#envelope')?.addEventListener('click', () => Achievements.unlock('letter_reader'));
+        new IntersectionObserver((entries) => {
+            entries.forEach(e => { if (e.isIntersecting) Achievements.unlock('memory_collector'); });
+        }, { threshold: 0.05 }).observe($('#chapter-timeline'));
+        new IntersectionObserver((entries) => {
+            entries.forEach(e => { if (e.isIntersecting) Achievements.unlock('firework_lover'); });
+        }, { threshold: 0.05 }).observe($('#chapter-finale'));
+
+        /* star_explorer: watch the constellation complete element for the 'show' class */
+        new MutationObserver(() => {
+            if ($('#constComplete').classList.contains('show')) Achievements.unlock('star_explorer');
+        }).observe($('#constComplete'), { attributes: true, attributeFilter: ['class'] });
+
+        /* wish_maker: count wish-jar star clicks */
+        (function trackWishes() {
+            let clicks = 0;
+            $$('.jar-star').forEach(star => {
+                star.addEventListener('click', () => {
+                    clicks++;
+                    if (clicks >= 5) Achievements.unlock('wish_maker');
+                });
+            });
+        })();
+
+        /* journey_complete: every .chapter section has been visited at least once */
+        (function trackJourney() {
+            const chapters = $$('.chapter');
+            const visited = new Set();
+            const obs = new IntersectionObserver((entries) => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) {
+                        visited.add(e.target.id);
+                        if (visited.size >= chapters.length) Achievements.unlock('journey_complete');
+                    }
+                });
+            }, { threshold: 0.05 });
+            chapters.forEach(c => obs.observe(c));
+        })();
+
+        /* ============================================================
+           SAVE KEEPSAKE — render a downloadable memory card
+           ============================================================ */
+        (function keepsake() {
+            const btn = $('#saveKeepsakeBtn');
+            if (!btn) return;
+            btn.addEventListener('click', () => {
+                const canvas = $('#keepsakeCanvas');
+                const ctx = canvas.getContext('2d');
+                const w = canvas.width,
+                    h = canvas.height;
+                const grad = ctx.createLinearGradient(0, 0, w, h);
+                grad.addColorStop(0, '#1b1436');
+                grad.addColorStop(1, '#5b3f8c');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, w, h);
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#f0d9a6';
+                ctx.font = '28px Georgia';
+                ctx.fillText('✧ A Little Universe ✧', w / 2, 100);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'italic 40px Georgia';
+                ctx.fillText('Happiest Birthday Bby my darling lovely sweetheart my love my cutie sweetie wifey ji', w / 2,
+                280);
+                ctx.font = '22px Georgia';
+                ctx.fillStyle = '#e6def9';
+                ctx.fillText("No matter how many birthdays come, I'll always choose you.", w / 2, 340);
+                ctx.font = 'italic 24px Georgia';
+                ctx.fillStyle = '#f0d9a6';
+                ctx.fillText('— Mr. Naveen Srishti Rautela', w / 2, 460);
+                ctx.font = '14px Georgia';
+                ctx.fillStyle = 'rgba(255,255,255,.5)';
+                ctx.fillText(new Date().toLocaleDateString(), w / 2, 560);
+                const link = document.createElement('a');
+                link.download = 'our-little-universe.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                toast('Keepsake saved ✧');
+            });
+        })();
+
+        /* ============================================================
+           SECRET MEMORY VAULT — unlocks once everything is found
+           ============================================================ */
+        function checkVaultReady() {
+            window._vaultReady = Achievements.all();
+        }
+        (function vault() {
+            const btn = $('#vaultBtn'),
+                modal = $('#vaultModal'),
+                close = $('#vaultClose'),
+                title = $('#vaultTitle'),
+                text = $('#vaultText');
+            if (!btn) return;
+            btn.addEventListener('click', () => {
+                if (window._vaultReady) {
+                    title.textContent = '✧ The Secret Vault';
+                    text.innerHTML =
+                        `Mera Pyaara Gunnu Bachaa if you're reading this that means you found every star, every secret, every hidden corner of this little universe. That's typical of you : thorough, curious, all-in. That's exactly why I love you though there are sooo manyyy more reasons too. This is the realest version of what I feel with nothing decorative around it: you are it for me. — Your Love`;
+                } else {
+                    title.textContent = '🔒 Vault Locked';
+                    text.textContent =
+                        `Find every hidden secret and unlock every achievement (${Achievements.size()}/${Achievements.total} so far) to open this vault.`;
+                }
+                modal.classList.add('show');
+            });
+            close.addEventListener('click', () => modal.classList.remove('show'));
+        })();
+
+        /* ============================================================
+           PWA — register service worker for offline/installable support
+           NOTE: requires the file to be served over http(s) (e.g. a local
+           server, Netlify, GitHub Pages) — file:// browsing skips this safely.
+           ============================================================ */
+        if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(() => {});
+            });
+        }
+    </script>
+</body>
+</html>

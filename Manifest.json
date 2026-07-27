@@ -1,0 +1,15 @@
+{
+  "name": "For You — A Little Universe",
+  "short_name": "Little Universe",
+  "start_url": "./birthday.html",
+  "display": "standalone",
+  "background_color": "#1b1436",
+  "theme_color": "#5b3f8c",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
